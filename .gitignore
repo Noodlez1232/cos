@@ -27,4 +27,4 @@
 *.exe
 *.out
 *.app
-/barebones-toolchain
+barebones-toolchain/
