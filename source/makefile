@@ -37,7 +37,7 @@ cos.bin: $(OBJ)
 	cp grub/grub.cfg isodir/boot/grub/grub.cfg
 #Actually make the file using grub-mkrescue
 	echo Making GRUB iso...
-	grub-mkrescue -o LiquiDOS.iso isodir
+	grub-mkrescue -o cos.iso isodir
 	echo Cleaning up current mess...
 
 
