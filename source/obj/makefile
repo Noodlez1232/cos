@@ -10,5 +10,5 @@ LDARGS=-ffreestanding -O2 -nostdlib
 OBJ = $(wildcard *.o)
 # Link 'em all up
 cos.bin: $(OBJ)
-	$(CC) -T../linker.ld -o $@ $(LDARGS) $^
+	$(CC) -T linker.ld -o $@ $(LDARGS) $^
 	mv cos.bin ../
