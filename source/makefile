@@ -51,6 +51,7 @@ $(ODIR)/%.o: $(SOURCES)
 #Compile that shit
 cos.bin: $(OBJ)
 #Here we link all the *.o files together to make the .bin file (see obj/makefile)
+	$(MAKE) $(ODIR)/%.o
 	cd obj && $(MAKE)
 # Make the GRUB iso
 	echo Setting up GRUB...
