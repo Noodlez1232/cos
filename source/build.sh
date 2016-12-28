@@ -5,19 +5,20 @@
 
 #build all the source files
 for i in asm/*.s; do
-	i686-elf-as $$i -o $$i.o
+	i686-elf-as $i -o $i.o
 done
 
 for i in kernel/*.c++; do
-	i686-elf-g++ $$i -o $$i.o -ffreestanding -O3 -Wall -Wextra -Iinclude -fdiagnostics-color=auto -std=gnu99
+	i686-elf-g++ $i -o $i.o -fno-use-linker-plugin  -ffreestanding -O3 -Wall -Wextra -Iinclude -fdiagnostics-color=auto
 done
 
 for i in asm/*.asm; do
-	nasm -felf $$i -o $$i.o
+	nasm -felf $i -o $i.o
 done
 
 mv **/*.o /obj
 cd obj && make
+cd ..
 # Make the GRUB iso
 	echo Setting up GRUB...
 	mkdir -p isodir/boot/grub
