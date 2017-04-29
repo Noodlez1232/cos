@@ -27,4 +27,6 @@
 *.exe
 *.out
 *.app
-barebones-toolchain/
+
+source/isodir/
+barebones-toolchainoolchain/
