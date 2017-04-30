@@ -6,7 +6,7 @@ If I'm gonna be honest I have small plans with this, but I'm just going for an O
 
 ## How do I compile this piece of crap?
 1. Make sure you have an i686-elf cross compiler ready to go and in your $PATH ([Find how to compile it here](http://wiki.osdev.org/GCC_Cross-Compiler)).
-..* If not, you can use the barebones toolchain included, or you can get that toolchain from [here](https://github.com/rm-hull/barebones-toolchain)
+  * If not, you can use the barebones toolchain included, or you can get that toolchain from [here](https://github.com/rm-hull/barebones-toolchain)
 2. Run build.sh
 3. Use the cos.iso to run in a VM or refer to [here](http://wiki.osdev.org/Bare_Bones#Booting_the_Kernel) for more options
 
