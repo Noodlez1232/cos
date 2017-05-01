@@ -1,5 +1,5 @@
 #include <display/term.h>
-#include <kernel/mem.h>
+#include <common.h>
 
 static const size_t VGA_WIDTH = 80;
 static const size_t VGA_HEIGHT = 25;
@@ -22,7 +22,6 @@ static inline uint16_t vga_entry(unsigned char uc, uint8_t color)
 	return (uint16_t) uc | (uint16_t) color << 8;
 }
 
-//Inits the VGA terminal
 void terminal_initialize(void)
 {
 	terminal_row = 0;
@@ -38,56 +37,61 @@ void terminal_initialize(void)
 		}
 	}
 }
-
-//Sets the current color of the terminal
+ 
 void terminal_setcolor(uint8_t color)
 {
 	terminal_color = color;
 }
-
-//Puts a char at the coordinates specified with the color specified
+ 
 void terminal_putentryat(char c, uint8_t color, size_t x, size_t y)
 {
 	const size_t index = y * VGA_WIDTH + x;
 	terminal_buffer[index] = vga_entry(c, color);
 }
-
-//Puts a char in TTY mode in the terminal
+ 
 void terminal_putchar(char c)
 {
 	if (c == '\n')
 	{
-		terminal_row++;
-		terminal_column = 0;
-		if (++terminal_row >= VGA_HEIGHT)
-			terminal_scroll();
-	}
+		terminal_column=0;
+		if (++terminal_row == VGA_HEIGHT)
+			terminal_row = 0;
+	}	
 	else
 	{
-		if (++terminal_column >= VGA_WIDTH) 
+		terminal_putentryat(c, terminal_color, terminal_column, terminal_row);
+		if (++terminal_column == VGA_WIDTH)
 		{
 			terminal_column = 0;
-			terminal_row++;
-			if (++terminal_row >= VGA_HEIGHT)
-				terminal_scroll();
+			if (++terminal_row == VGA_HEIGHT)
+				terminal_row = 0;
 		}
-		terminal_putentryat(c, terminal_color, terminal_column, terminal_row);
 	}
+}
+ 
+void terminal_write(const char* data, size_t size)
+{
+	for (size_t i = 0; i < size; i++)
+		terminal_putchar(data[i]);
+}
+ 
+void terminal_writestring(const char* data)
+{
+	terminal_write(data, strlen(data));
 }
 
 
 //Scrolls the terminal
 void terminal_scroll()
 {
-	for (size_t x = 0; x < VGA_WIDTH; x++)
+	for (uint32_t i; i<(VGA_HEIGHT-1)*VGA_WIDTH; i++)
 	{
-		terminal_putentryat(' ', terminal_color, x, terminal_row);
-		terminal_putentryat(' ', terminal_color, x, 0);
+		terminal_buffer[i]=terminal_buffer[i+VGA_WIDTH];
 	}
-	memmove(terminal_buffer, terminal_buffer+VGA_WIDTH, VGA_WIDTH*(VGA_HEIGHT));
-	terminal_row--;
+	terminal_row=VGA_HEIGHT-1;
+	terminal_column=0;
 	
-	//TODO: Implement the terminal scrolling
+	//TODO: Fix this. It's absolute shit...
 }
 
 void terminal_clear()
@@ -102,22 +106,36 @@ void terminal_clear()
 	}
 }
 
-//Writes data with size to the terminal buffer
-void terminal_write(const char* data, size_t size) 
-{
-	for (size_t i = 0; i < size; i++)
-		terminal_putchar(data[i]);
-}
-
-
-//Writes a string to the terminal in TTY mode
-void terminal_writestring(const char* data)
-{
-	terminal_write(data, strlen(data));
-}
-
 void terminal_setcursor(size_t x, size_t y)
 {
 	terminal_column = x;
 	terminal_row = y;
+}
+
+void terminal_bootInfo(const char* string, char infoLevel)
+{
+	terminal_writestring("[");
+	switch (infoLevel)
+	{
+		case 0:
+			terminal_setcolor(vga_entry_color(VGA_COLOR_GREEN, VGA_COLOR_BLACK));
+			terminal_writestring("OK");
+			break;
+		case 1:
+			terminal_setcolor(vga_entry_color(VGA_COLOR_RED, VGA_COLOR_BLACK));
+			terminal_writestring("ERR");
+			break;
+		case 2:
+			terminal_setcolor(vga_entry_color(VGA_COLOR_BLUE, VGA_COLOR_BLACK));
+			terminal_writestring("INFO");
+			break;
+		default:
+			terminal_setcolor(vga_entry_color(VGA_COLOR_BROWN, VGA_COLOR_BLACK));
+			terminal_writestring("?");
+			break;
+	}
+	terminal_setcolor(vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK));
+	terminal_writestring("] ");
+	terminal_writestring(string);
+	
 }

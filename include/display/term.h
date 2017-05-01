@@ -37,5 +37,6 @@ void terminal_write(const char* data, size_t size);
 void terminal_clear();
 void terminal_writestring(const char* data);
 void terminal_setcursor(size_t x, size_t y);
+void terminal_bootInfo(const char* string, char infoLevel);
 
 #endif
