@@ -10,14 +10,17 @@ void* memcpy(void* restrict dstptr, const void* restrict srcptr, size_t size);
 void* memmove(void* dstptr, const void* srcptr, size_t size);
 void* memset(void* bufptr, int value, size_t size);
 size_t strlen(const char* str);
+void halt();
 
+
+
+/* This defines what the stack looks like after an ISR was running */
 struct regs
 {
-    unsigned int gs, fs, es, ds;      /* pushed the segs last */
-    unsigned int edi, esi, ebp, esp, ebx, edx, ecx, eax;  /* pushed by 'pusha' */
-    unsigned int int_no, err_code;    /* our 'push byte #' and ecodes do this */
-    unsigned int eip, cs, eflags, useresp, ss;   /* pushed by the processor automatically */ 
+   unsigned int gs, fs, es, ds;                  // Data segment selector
+   unsigned int edi, esi, ebp, esp, ebx, edx, ecx, eax; // Pushed by pusha.
+   unsigned int int_no, err_code;    // Interrupt number and error code (if applicable)
+   unsigned int eip, cs, eflags, useresp, ss; // Pushed by the processor automatically.
 };
-
 
 #endif

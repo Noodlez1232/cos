@@ -55,3 +55,9 @@ void* memcpy(void* restrict dstptr, const void* restrict srcptr, size_t size)
 		dst[i] = src[i];
 	return dstptr;
 }
+
+void halt()
+{
+	asm volatile("cli");
+	for (;;);
+}

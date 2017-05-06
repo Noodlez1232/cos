@@ -37,10 +37,10 @@ void terminal_initialize(void)
 		}
 	}
 }
- 
-void terminal_setcolor(uint8_t color)
+
+void terminal_setcolor(enum vga_color fg, enum vga_color bg)
 {
-	terminal_color = color;
+	terminal_color=vga_entry_color(fg, bg);
 }
  
 void terminal_putentryat(char c, uint8_t color, size_t x, size_t y)
@@ -79,6 +79,11 @@ void terminal_writestring(const char* data)
 {
 	terminal_write(data, strlen(data));
 }
+void terminal_writeline(const char* data)
+{
+	terminal_writestring(data);
+	terminal_putchar('\n');
+}
 
 
 //Scrolls the terminal
@@ -104,6 +109,7 @@ void terminal_clear()
 			terminal_buffer[index] = vga_entry(' ', terminal_color);
 		}
 	}
+	terminal_setcursor(0,0);
 }
 
 void terminal_setcursor(size_t x, size_t y)
@@ -118,24 +124,29 @@ void terminal_bootInfo(const char* string, char infoLevel)
 	switch (infoLevel)
 	{
 		case 0:
-			terminal_setcolor(vga_entry_color(VGA_COLOR_GREEN, VGA_COLOR_BLACK));
+			terminal_color=vga_entry_color(VGA_COLOR_GREEN, VGA_COLOR_BLACK);
 			terminal_writestring("OK");
 			break;
 		case 1:
-			terminal_setcolor(vga_entry_color(VGA_COLOR_RED, VGA_COLOR_BLACK));
+			terminal_color=vga_entry_color(VGA_COLOR_RED, VGA_COLOR_BLACK);
 			terminal_writestring("ERR");
 			break;
 		case 2:
-			terminal_setcolor(vga_entry_color(VGA_COLOR_BLUE, VGA_COLOR_BLACK));
+			terminal_color=vga_entry_color(VGA_COLOR_BLUE, VGA_COLOR_BLACK);
 			terminal_writestring("INFO");
 			break;
 		default:
-			terminal_setcolor(vga_entry_color(VGA_COLOR_BROWN, VGA_COLOR_BLACK));
+			terminal_color=vga_entry_color(VGA_COLOR_BROWN, VGA_COLOR_BLACK);
 			terminal_writestring("?");
 			break;
 	}
-	terminal_setcolor(vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK));
+	terminal_color=vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
 	terminal_writestring("] ");
 	terminal_writestring(string);
+	
+}
+
+void terminal_printhex(void* value, unsigned char size)
+{
 	
 }

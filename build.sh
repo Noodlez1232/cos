@@ -18,16 +18,25 @@ for i in *.c; do
 	echo Compiling $i
 	i686-elf-gcc -c $i -o $OBJ/kernel_$i.o $CFLAGS -I$INCLUDE
 done
-echo Assembling kernel asm files
+cd asm
+echo Assembling kernel/asm asm files
 for i in *.asm; do
 	echo Assembling $i
 	nasm -felf32 $i -o $OBJ/kernel_asm_$i.o
 done
+cd ..
 echo Compiling kernel/display files
 cd display
 for i in *.c; do
 	echo Compiling $i
-	i686-elf-gcc -c $i -o $OBJ/kernel_$i.o $CFLAGS -I$INCLUDE
+	i686-elf-gcc -c $i -o $OBJ/kernel_display_$i.o $CFLAGS -I$INCLUDE
+done
+cd ..
+echo Compiling kernel/sys fies
+cd sys
+for i in *.c; do
+	echo Compiling $i
+	i686-elf-gcc -c $i -o $OBJ/kernel_sys_$i.o $CFLAGS -I$INCLUDE
 done
 cd ..
 cd ..
