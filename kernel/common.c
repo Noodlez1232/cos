@@ -61,3 +61,22 @@ void halt()
 	asm volatile("cli");
 	for (;;);
 }
+
+void halt_with_interrupts()
+{
+	for (;;);
+}
+
+//Takes input from an IO port
+unsigned char inportb(unsigned short _port)
+{
+    unsigned char rv;
+    asm volatile("inb %1, %0" : "=a" (rv) : "dN" (_port));
+    return rv;
+}
+
+//Outputs to an IO port
+void outportb(unsigned short _port, unsigned char _data)
+{
+    asm volatile("outb %1, %0" : : "dN" (_port), "a" (_data));
+}

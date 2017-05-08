@@ -1,5 +1,5 @@
-#ifndef _MEM_H
-#define _MEM_H 1
+#ifndef _COMMON_H
+#define _COMMON_H 1
 
 #include <stddef.h>
 #include <stdint.h>
@@ -11,6 +11,10 @@ void* memmove(void* dstptr, const void* srcptr, size_t size);
 void* memset(void* bufptr, int value, size_t size);
 size_t strlen(const char* str);
 void halt();
+void halt_with_interrupts();
+void outportb(unsigned short _port, unsigned char _data);
+unsigned char inportb(unsigned short _port);
+
 
 
 

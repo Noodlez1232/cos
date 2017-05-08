@@ -89,3 +89,6 @@ _start:
 # Set the size of the _start symbol to the current location '.' minus its start.
 # This is useful when debugging or when you implement call tracing.
 .size _start, . - _start
+
+#Basically, tell them to quit trying to reverse engineer this, because, of course, there is no need...
+.ascii "If you see this... You do know the source is completely open, right? No need to reverse engineer this... Like, you are smart, but also dumb for not just checking on GitHub.\0"

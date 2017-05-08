@@ -42,6 +42,7 @@ extern void isr31();
 
 void isrs_install();
 void fault_handler(struct regs *r);
+void print_kitty();
 
 /* This is a simple string array. It contains the message that
 *  corresponds to each and every exception. We get the correct
