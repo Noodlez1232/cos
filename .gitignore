@@ -29,4 +29,7 @@
 *.app
 
 source/isodir/
-barebones-toolchainoolchain/
+barebones-toolchain/
+cos.sublime-project
+cos.sublime-workspace
+bochsrc*

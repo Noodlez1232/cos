@@ -42,12 +42,13 @@ void kernel_main(void)
 	isrs_install();		//Init our ISRs
 	terminal_bootInfo("Initalizing IRQs\n", 2);
 	irq_install();		//Init our IRQs
+	terminal_writehexdword(0xFEDCBA98);
 	timer_install();	//Init the timer
 	terminal_writestring("System initalized! Welcome to crappy os!\n");
 	terminal_writeline("Gonna wait for 5 seconds");
 	timer_wait(5*18);
 	terminal_writeline("Thanks for waiting, now let's get the show started!");
 	halt_with_interrupts();
-	termial_writeline("wat?");
+	terminal_writeline("wat?");
 	halt();
 }

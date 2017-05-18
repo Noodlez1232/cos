@@ -5,7 +5,7 @@ echo Building cos
 CURDIR=`pwd`
 INCLUDE=`pwd`/include
 OBJ=`pwd`/obj
-CFLAGS="-std=gnu99 -ffreestanding -O2 -Wall -Wextra -fdiagnostics-color=auto"
+CFLAGS="-std=gnu99 -ffreestanding -O2 -Wall -Wextra -fdiagnostics-color=auto -Werror=implicit-function-declaration"
 OUT=cos.bin
 ISOOUT=cos.iso
 

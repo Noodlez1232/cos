@@ -9,15 +9,17 @@ size_t terminal_column;
 uint8_t terminal_color;
 uint16_t* terminal_buffer;
 
+char hextable[] = "0123456789ABCDEF";
+
 
 //Gets a VGA color
-static inline uint8_t vga_entry_color(enum vga_color fg, enum vga_color bg)
+uint8_t vga_entry_color(enum vga_color fg, enum vga_color bg)
 {
 	return fg | bg << 4;
 }
  
  //Gets a VGA character
-static inline uint16_t vga_entry(unsigned char uc, uint8_t color)
+uint16_t vga_entry(unsigned char uc, uint8_t color)
 {
 	return (uint16_t) uc | (uint16_t) color << 8;
 }
@@ -55,7 +57,7 @@ void terminal_putchar(char c)
 	{
 		terminal_column=0;
 		if (++terminal_row == VGA_HEIGHT)
-			terminal_row = 0;
+			terminal_scroll();
 	}	
 	else
 	{
@@ -64,7 +66,7 @@ void terminal_putchar(char c)
 		{
 			terminal_column = 0;
 			if (++terminal_row == VGA_HEIGHT)
-				terminal_row = 0;
+				terminal_scroll();
 		}
 	}
 }
@@ -89,7 +91,7 @@ void terminal_writeline(const char* data)
 //Scrolls the terminal
 void terminal_scroll()
 {
-	for (uint32_t i; i<(VGA_HEIGHT-1)*VGA_WIDTH; i++)
+	for (uint32_t i = 0; i<(VGA_HEIGHT-1)*VGA_WIDTH; i++)
 	{
 		terminal_buffer[i]=terminal_buffer[i+VGA_WIDTH];
 	}
@@ -146,7 +148,26 @@ void terminal_bootInfo(const char* string, char infoLevel)
 	
 }
 
-void terminal_printhex(void* value, unsigned char size)
+void terminal_writehexbyte(uint8_t value)
 {
-	
+	//Write higher nibble
+	terminal_putchar(hextable[value >> 4]);
+	//Write lower nibble
+	terminal_putchar(hextable[value & 0xF]);
+}
+
+void terminal_writehexword(uint16_t value)
+{
+	//Write higher byte
+	terminal_writehexbyte(value >> 8);
+	//Write lower byte
+	terminal_writehexbyte(value & 0xFF);
+}
+
+void terminal_writehexdword(uint32_t value)
+{
+	//Write higher word
+	terminal_writehexword(value >> 16);
+	//Write lower word
+	terminal_writehexword(value & 0xFFFF);
 }

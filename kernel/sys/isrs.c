@@ -1,6 +1,47 @@
 #include <common.h>
 #include <sys/isrs.h>
 #include <display/term.h>
+#include <sys/idt.h>
+
+/* This is a simple string array. It contains the message that
+*  corresponds to each and every exception. We get the correct
+*  message by accessing like:
+*  exception_message[interrupt_number] */
+char *exception_messages[] =
+{
+    "Division By Zero",
+    "Debug",
+    "Non Maskable Interrupt",
+    "Breakpoint",
+	"Into Detected Overflow",
+	"Out Of Bounds",
+	"Invalid Opcode",
+	"No Coprocessor",
+	"Double Fault",
+	"Coprocessor Segment Overrun",
+	"Bad TSS Exception",
+	"Segment Not Present",
+	"Stack Fault",
+	"General Protection Fault",
+	"Page Fault",
+	"Unknown Interrupt",
+	"Coprocessor Fault",
+	"Alignment Check",	//486+
+	"Machine Check",	//Pentium+
+	"Reserved",
+	"Reserved",
+	"Reserved",
+	"Reserved",
+	"Reserved",
+	"Reserved",
+	"Reserved",
+	"Reserved",
+	"Reserved",
+	"Reserved",
+	"Reserved",
+	"Reserved",
+	"Reserved"
+};
 
 void isrs_install()
 {
@@ -51,16 +92,34 @@ void fault_handler(struct regs *r)
  	/* Is this a fault whose number is from 0 to 31? */
     if (r->int_no < 32)
     {
-        /* Display the description for the Exception that occurred.
-        *  In this tutorial, we will simply halt the system using an
-        *  infinite loop */
-		terminal_setcolor(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
-		terminal_clear();
-        terminal_writestring(exception_messages[r->int_no]);
-        terminal_writestring(" Exception. System Halted!\n");
-		terminal_writestring("I know you're scared now... Here's a cat under the moon...\n");
-		print_kitty();
-        halt();
+		//Check if the OS is in debug mode
+		#if DEBUG == 0
+		//Yep
+		
+		/*Display the current exception and make sure the user is
+		 *sufficiently calmed
+		 */
+			terminal_setcolor(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
+			terminal_clear();
+			terminal_writestring(exception_messages[r->int_no]);
+			terminal_writestring(" Exception. System Halted!\n");
+			terminal_writestring("I know you're scared now... Here's a cat under the moon...\n");
+			print_kitty();
+			halt();
+		
+		#else
+		//nope
+			terminal_putchar('\n');
+			terminal_setcolor(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
+			terminal_writestring(exception_messages[r->int_no]);
+			terminal_putchar('[');
+			terminal_writehexdword(r->int_no);
+			terminal_putchar(']');
+			terminal_writestring(" Exception. System Halted!\n");
+			halt();
+			//regdump(r);
+		
+		#endif
     }
 }
 
@@ -89,4 +148,17 @@ void print_kitty()
 	terminal_writeline("  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |");
 	terminal_writeline("  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |");
 	
+}
+
+void regdump(struct regs *r)
+{
+	terminal_writestring("gs:");
+	terminal_writehexdword(r->gs);
+	terminal_writestring(" fs:");
+	terminal_writehexdword(r->gs);
+	terminal_writestring(" es:");
+	terminal_writehexdword(r->es);
+	terminal_writestring(" ds:");
+	terminal_writehexdword(r->ds);
+	terminal_putchar('\n');
 }

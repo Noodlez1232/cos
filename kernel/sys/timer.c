@@ -1,8 +1,9 @@
 #include <sys/timer.h>
 #include <display/term.h>
+#include <sys/irqs.h>
 
 //Keeps track of how many ticks our OS has been running for
-int timer_ticks = 0;
+unsigned int timer_ticks = 0;
 
 /*
  *Handles our timer. In this case it's just a tick counter and prints a message every second
@@ -22,7 +23,7 @@ int timer_ticks = 0;
 	}
  }
  
- void timer_wait(int ticks)
+ void timer_wait(unsigned int ticks)
  {
 	 //Get the next tick count that that many ticks will pass
 	 unsigned long eticks;
@@ -38,5 +39,5 @@ int timer_ticks = 0;
 void timer_install()
 {
 	//Sets timer_handler as IRQ0
-	irq_install_handler(0, timer_handler);
+	irq_install_handler(0, *timer_handler);
 }

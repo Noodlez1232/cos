@@ -16,7 +16,7 @@ struct idt_entry
 struct idt_ptr
 {
     uint16_t limit;
-    uint32_t base;
+    uint32_t* base;
 } __attribute__((packed));
 
 void idt_set_gate(unsigned char num, unsigned long base, unsigned short sel, unsigned char flags);

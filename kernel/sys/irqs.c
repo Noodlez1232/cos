@@ -1,9 +1,22 @@
 #include <sys/irqs.h>
 #include <sys/idt.h>
+#include <display/term.h>
+
+void *irq_routines[16] =
+{
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0
+};
 
 //This installs a custom IRQ handler for the given IRQ
 void irq_install_handler(int irq, void (*handler)(struct regs *r))
 {
+	terminal_writestring("Installing custom IRQ handler no.");
+	terminal_writehexdword(irq);
+	terminal_writestring(" Pointed at: ");
+	terminal_writehexdword(handler);
+	terminal_writestring("With ISR number: ");
+	terminal_putchar('\n');
 	irq_routines[irq] = handler;
 }
 
@@ -69,16 +82,29 @@ void irq_install()
  */
 void irq_handler(struct regs *r)
 {
+	
 	//Just a blank function handler to use to call things.
 	void (*handler)(struct regs *r);
 
 	//See if we have a custom handler to run the IRQ and if so, run it, and if not, don't
 	handler = irq_routines[r->int_no - 32];
+	terminal_writestring("IRQ no. ");
+	terminal_writehexword(r->int_no - 32);
+	terminal_writeline(" fired.");
 	if (handler)
 	{
+		terminal_writestring("Calling IRQ no");
+		terminal_writehexword(r->int_no-32);
+		
+		terminal_putchar('\n');
 		handler(r);
 	}
 
+	if (r->int_no == 39)
+	{
+		return;
+	}
+	
 	//Make sure the slave controller gets an EOI on any IRQs greater than 8 (IDT[40])
 	if (r->int_no >= 40)
 	{

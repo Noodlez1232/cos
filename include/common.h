@@ -1,6 +1,8 @@
 #ifndef _COMMON_H
 #define _COMMON_H 1
 
+#define DEBUG 1
+
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>

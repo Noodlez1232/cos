@@ -25,8 +25,8 @@ enum vga_color
 	VGA_COLOR_WHITE = 15,
 };
 
-static inline uint16_t vga_entry(unsigned char uc, uint8_t color);
-static inline uint8_t vga_entry_color(enum vga_color fg, enum vga_color bg);
+uint16_t vga_entry(unsigned char uc, uint8_t color);
+uint8_t vga_entry_color(enum vga_color fg, enum vga_color bg);
 
 void terminal_initialize(void);
 void terminal_setcolor(enum vga_color fg, enum vga_color bg);
@@ -39,6 +39,8 @@ void terminal_writestring(const char* data);
 void terminal_writeline(const char* data);
 void terminal_setcursor(size_t x, size_t y);
 void terminal_bootInfo(const char* string, char infoLevel);
-void terminal_printhex(void* value, unsigned char size);
+void terminal_writehexbyte(uint8_t value);
+void terminal_writehexword(uint16_t value);
+void terminal_writehexdword(uint32_t value);
 
 #endif

@@ -43,45 +43,6 @@ extern void isr31();
 void isrs_install();
 void fault_handler(struct regs *r);
 void print_kitty();
-
-/* This is a simple string array. It contains the message that
-*  corresponds to each and every exception. We get the correct
-*  message by accessing like:
-*  exception_message[interrupt_number] */
-unsigned char *exception_messages[] =
-{
-    "Division By Zero",
-    "Debug",
-    "Non Maskable Interrupt",
-    "Breakpoint",
-	"Into Detected Overflow",
-	"Out Of Bounds",
-	"Invalid Opcode",
-	"No Coprocessor",
-	"Double Fault",
-	"Coprocessor Segment Overrun",
-	"Bad TSS Exception",
-	"Segment Not Present",
-	"Stack Fault",
-	"General Protection Fault",
-	"Page Fault",
-	"Unknown Interrupt",
-	"Coprocessor Fault",
-	"Alignment Check",	//486+
-	"Machine Check",	//Pentium+
-	"Reserved",
-	"Reserved",
-	"Reserved",
-	"Reserved",
-	"Reserved",
-	"Reserved",
-	"Reserved",
-	"Reserved",
-	"Reserved",
-	"Reserved",
-	"Reserved",
-	"Reserved",
-	"Reserved"
-};
+void regdump();
 
 #endif
