@@ -2,26 +2,24 @@
 #include <sys/idt.h>
 #include <display/term.h>
 
-void *irq_routines[16] =
-{
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0
-};
+isr_t irq_routines[255]; //16 would suffice, but just to be sure...
 
 //This installs a custom IRQ handler for the given IRQ
-void irq_install_handler(int irq, void (*handler)(struct regs *r))
+void irq_install_handler(uint8_t irq, isr_t handler)
 {
-	terminal_writestring("Installing custom IRQ handler no.");
+	#if 0
+	terminal_writestring("Installing custom IRQ handler no." );
 	terminal_writehexdword(irq);
 	terminal_writestring(" Pointed at: ");
 	terminal_writehexdword(handler);
-	terminal_writestring("With ISR number: ");
+	terminal_writestring(" With ISR number: ");
 	terminal_putchar('\n');
+	#endif
 	irq_routines[irq] = handler;
 }
 
 //This clears the handler for a given IRQ
-void irq_uninstall_handler(int irq)
+void irq_uninstall_handler(uint8_t irq)
 {
 	irq_routines[irq] = 0;
 }
@@ -72,7 +70,7 @@ void irq_install()
 	terminal_bootInfo("IRQs Loaded\n", 0);
 }
 
-/*Each IRQ ISR points to this function rantehr than the fault handler we have in
+/*Each IRQ ISR points to this function rather than the fault handler we have in
  *"isrs.c". This is becuase all the IRQ controllers need to have a special 'end of interrupt'
  *or EOI signal(0x20) thrown at them to tell them that you've finished handling the interrupt.
  *This is given to the master controller (at 0x20) in all calses and when an IRQ from 8 to 15
@@ -80,23 +78,14 @@ void irq_install()
  *sends the EOI signal to the slave controller also.
  *If this EOI signal is not given to the IRQ controllers, they will never send an IRQ again.
  */
-void irq_handler(struct regs *r)
+void irq_handler(regs_t *r)
 {
 	
-	//Just a blank function handler to use to call things.
-	void (*handler)(struct regs *r);
-
-	//See if we have a custom handler to run the IRQ and if so, run it, and if not, don't
-	handler = irq_routines[r->int_no - 32];
-	terminal_writestring("IRQ no. ");
-	terminal_writehexword(r->int_no - 32);
-	terminal_writeline(" fired.");
-	if (handler)
+	//Check to see if we have a custom IRQ to handle
+	if (irq_routines[r->int_no-32] != 0)
 	{
-		terminal_writestring("Calling IRQ no");
-		terminal_writehexword(r->int_no-32);
-		
-		terminal_putchar('\n');
+		//Get the handler from the array of handlers and call it.
+		isr_t handler = irq_routines[r->int_no-32];
 		handler(r);
 	}
 
@@ -108,9 +97,20 @@ void irq_handler(struct regs *r)
 	//Make sure the slave controller gets an EOI on any IRQs greater than 8 (IDT[40])
 	if (r->int_no >= 40)
 	{
-		outportb(0xA0, 0x20);
+		slaveEOI();
     }
+    masterEOI();
 
+}
+
+void masterEOI()
+{
 	//Send the EOI to the master controller
 	outportb(0x20, 0x20);
+}
+
+void slaveEOI()
+{
+	//Send EOI to the slave controller
+	outportb(0xA0, 0x20);
 }

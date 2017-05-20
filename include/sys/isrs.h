@@ -41,7 +41,7 @@ extern void isr31();
 
 
 void isrs_install();
-void fault_handler(struct regs *r);
+void fault_handler(regs_t *r);
 void print_kitty();
 void regdump();
 

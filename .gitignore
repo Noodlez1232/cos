@@ -33,3 +33,4 @@ barebones-toolchain/
 cos.sublime-project
 cos.sublime-workspace
 bochsrc*
+bochsrc*.*

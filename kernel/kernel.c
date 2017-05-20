@@ -31,24 +31,17 @@
 
 void kernel_main(void)
 {
-	uint8_t derp = 5;
 	/* Initialize terminal interface */
 	terminal_initialize();
-	terminal_bootInfo("Initalizing GDT\n", 2);
 	init_gdt();			//Init our stupid GDT
-	terminal_bootInfo("Initalizing IDT\n", 2);
 	init_idt();			//init our amazing IDT
-	terminal_bootInfo("Initalizing ISRs\n", 2);
 	isrs_install();		//Init our ISRs
-	terminal_bootInfo("Initalizing IRQs\n", 2);
 	irq_install();		//Init our IRQs
-	terminal_writehexdword(0xFEDCBA98);
 	timer_install();	//Init the timer
 	terminal_writestring("System initalized! Welcome to crappy os!\n");
 	terminal_writeline("Gonna wait for 5 seconds");
-	timer_wait(5*18);
+	timer_wait(5);
 	terminal_writeline("Thanks for waiting, now let's get the show started!");
-	halt_with_interrupts();
-	terminal_writeline("wat?");
+	timer_uninstall();
 	halt();
 }
