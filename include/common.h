@@ -14,6 +14,8 @@ void* memset(void* bufptr, int value, size_t size);
 size_t strlen(const char* str);
 void halt();
 void halt_with_interrupts();
+void clear_interrupts();
+void set_interrupts();
 void outportb(unsigned short _port, unsigned char _data);
 unsigned char inportb(unsigned short _port);
 

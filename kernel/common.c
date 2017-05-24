@@ -67,6 +67,15 @@ void halt_with_interrupts()
 	for (;;);
 }
 
+void clear_interrupts()
+{
+	asm volatile("cli");
+}
+void set_interrupts()
+{
+	asm volatile("sti");
+}
+
 //Takes input from an IO port
 unsigned char inportb(unsigned short _port)
 {

@@ -1,9 +1,19 @@
+//Include all our lovely libraries
 #include <sys/timer.h>
-#include <display/term.h>
+#include <display/term.h> //Originally used for some debugging
 #include <sys/irqs.h>
+
+/*
+ *In order to make sure the unused parameter regs_t *r doesn't raise
+ *an unused parameter warning (it's kinda annoying), we tell the compiler
+ *to just not do it. Problem solved...
+ */
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 
 //Keeps track of how many ticks our OS has been running for
 unsigned int timer_ticks = 0;
+uint32_t max_ticks = 4294967295; //Max of 32 bits
+bool timer_installed = false;
 
 /*
  *Handles our timer. In this case it's just a tick counter and prints a message every second
@@ -13,16 +23,19 @@ unsigned int timer_ticks = 0;
  */
  void timer_handler(regs_t *r)
  {
-	//Increment our tick count
-	timer_ticks++;
-
-	#if 0
-	//Every 18 ticks, we shove a message on the screen
-	if (timer_ticks % 100 == 0)
+	//Increment our tick count then check if the ticks are at or over
+	//our set max
+	if (++timer_ticks>=max_ticks)
 	{
-		terminal_writeline("Just about one second has passed");
+		clear_interrupts();
+		timer_uninstall();
 	}
-	#endif
+	terminal_writestring("Ticks: ");
+	terminal_writehexdword(timer_ticks);
+	terminal_putchar('\n');
+	terminal_writestring("Max Ticks: ");
+	terminal_writehexdword(max_ticks);
+	terminal_writeline("");
  }
  
  void timer_wait(unsigned int ticks)
@@ -38,31 +51,45 @@ unsigned int timer_ticks = 0;
 /*
  *The timer is at IRQ0, so we shall just shove a handler into that, and hope it works
  */
-void timer_install()
+void timer_install(uint32_t frequency)
 {
 	//Sets timer_handler as IRQ0
 	irq_install_handler(0, &timer_handler);
-	timer_phase(100);
-	timer_ticks=0;
+	timer_phase(frequency);
+	timer_reset();
+	timer_installed=true;
 }
 
 void timer_reset()
 {
+	max_ticks = 4294967295;
 	timer_ticks=0;
 }
 
 void timer_uninstall()
 {
-	irq_uninstall_handler(0);
+	terminal_writeline("Timer uninstalled");
+	irq_uninstall_handler(0); //0 is the IRQ for the timer
+	timer_installed=false;
+	set_interrupts();
 }
 
 
 
-void timer_phase(int hz)
+void timer_phase(uint32_t hz)
 {
-	int divisor = 1193180 / hz;       /* Calculate our divisor */
-	outportb(0x43, 0x36);             /* Set our command byte 0x36 */
-	outportb(0x40, divisor & 0xFF);   /* Set low byte of divisor */
-	outportb(0x40, divisor >> 8);     /* Set high byte of divisor */
+	int divisor = 1193180 / hz;					//Calculate our divisor
+	outportb(0x43, 0x36);						//Send the command byte
+	outportb(0x40, (uint8_t) divisor & 0xFF);	//Set low byte of divisor
+	outportb(0x40, (uint8_t) divisor >> 8);		//Set high byte of divisor
 }
 
+void timer_delay(uint32_t ms)
+{
+	timer_install(100);
+	timer_reset();
+	max_ticks=ms;
+	//Now we give it a dead loop to do until the timer is actually done
+	while (timer_installed);
+	terminal_writeline("Done!");
+}

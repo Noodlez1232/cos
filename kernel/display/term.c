@@ -53,6 +53,8 @@ void terminal_putentryat(char c, uint8_t color, size_t x, size_t y)
  
 void terminal_putchar(char c)
 {
+	if (c == '\0')
+		return;
 	if (c == '\n')
 	{
 		terminal_column=0;
@@ -91,10 +93,15 @@ void terminal_writeline(const char* data)
 //Scrolls the terminal
 void terminal_scroll()
 {
-	for (uint32_t i = 0; i<(VGA_HEIGHT-1)*VGA_WIDTH; i++)
-	{
+	//0 out the top line
+	for (uint32_t i = 0; i<VGA_WIDTH; i++)
+		terminal_buffer[i] = vga_entry(' ', terminal_color);
+	//Copy every single line after that to the line above
+	for (uint32_t i = VGA_WIDTH; i<(VGA_HEIGHT-1)*VGA_WIDTH; i++)
 		terminal_buffer[i]=terminal_buffer[i+VGA_WIDTH];
-	}
+	//Clear the bottom line
+	for (uint32_t i = 0; i<VGA_WIDTH; i++)
+		terminal_buffer[i+((VGA_HEIGHT-1)*VGA_WIDTH)] = vga_entry(' ', terminal_color);
 	terminal_row=VGA_HEIGHT-1;
 	terminal_column=0;
 	

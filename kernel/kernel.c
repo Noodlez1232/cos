@@ -1,9 +1,6 @@
 /* COS kernel main c file thing that does the other things for the thing */
 
 
-//Our required includes
-#include <stddef.h>
-#include <stdint.h>
 //Our common stuffs
 #include <common.h>
 //Our TTY and basic terminal functions
@@ -15,7 +12,11 @@
 #include <sys/isrs.h>
 #include <sys/irqs.h>
 #include <sys/timer.h>
+
+//TODO: FINISH THE KEYBOARD
+#include <input/keyboard.h>
  
+ //TODO: Fix the damn timer. I just don't have the time for that, though.
  
  
 //Make sure it's only compiling under a cross-compiler
@@ -31,17 +32,13 @@
 
 void kernel_main(void)
 {
-	/* Initialize terminal interface */
-	terminal_initialize();
-	init_gdt();			//Init our stupid GDT
-	init_idt();			//init our amazing IDT
-	isrs_install();		//Init our ISRs
-	irq_install();		//Init our IRQs
-	timer_install();	//Init the timer
+	terminal_initialize();	//Init our terminal
+	init_gdt();				//Init our stupid GDT
+	init_idt();				//init our amazing IDT
+	isrs_install();			//Init our ISRs
+	irq_install();			//Init our IRQs
+	keyboard_install();		//Init the keyboard
 	terminal_writestring("System initalized! Welcome to crappy os!\n");
-	terminal_writeline("Gonna wait for 5 seconds");
-	timer_wait(5);
-	terminal_writeline("Thanks for waiting, now let's get the show started!");
-	timer_uninstall();
-	halt();
+
+	halt_with_interrupts();
 }

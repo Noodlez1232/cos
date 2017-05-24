@@ -39,6 +39,13 @@ for i in *.c; do
 	i686-elf-gcc -c $i -o $OBJ/kernel_sys_$i.o $CFLAGS -I$INCLUDE
 done
 cd ..
+echo Compiling kernel/input fies
+cd input
+for i in *.c; do
+	echo Compiling $i
+	i686-elf-gcc -c $i -o $OBJ/kernel_input_$i.o $CFLAGS -I$INCLUDE
+done
+cd ..
 cd ..
 
 echo Linking all .o files to $OUT
@@ -58,8 +65,8 @@ if [ $1 = ""]; then
 		echo multiboot OS in $OUT confirmed, creating iso
 		mkdir -p isodir/boot/grub
 		cp $OUT isodir/boot/$OUT
-		cp grub/grub.cfg isodir/boot/grub/grub.cfg
-		grub-mkrescue -o $ISOOUT isodir
+		cp grub/* isodir/boot/grub/*
+		grub-mkrescue -o $ISOOUT isodir > /dev/null
 	else
 		echo $OUT is not multiboot
 	fi
@@ -70,7 +77,7 @@ if [ $1 = "iso" ]; then
 		mkdir -p isodir/boot/grub
 		cp $OUT isodir/boot/$OUT
 		cp grub/grub.cfg isodir/boot/grub/grub.cfg
-		grub-mkrescue -o $ISOOUT isodir
+		grub-mkrescue -o $ISOOUT isodir > /dev/null
 	else
 		echo $OUT is not multiboot
 	fi
