@@ -18,15 +18,13 @@ keyboardHandler keyboard_handlers[256];
 void keyboard_handler(struct regs *r)
 {
 
-	terminal_writeline("Keyboard handler called");
-
 	unsigned char scancode;
 
 	/* Read from the keyboard's data buffer */
 	scancode = inportb(0x60);
 
 
-	for (unsigned char i = 0; i>256; i++)
+	for (unsigned char i = 0; i<255; i++)
 	{
 		if (keyboard_handlers[i]!=0)
 		{
@@ -38,8 +36,9 @@ void keyboard_handler(struct regs *r)
 
 void random_handler(unsigned char scancode)
 {
-	terminal_writeline("Random handler called");
-	terminal_writeline(keyboard_scan_to_ascii(scancode));
+	char ret = keyboard_scan_to_ascii(scancode);
+	terminal_putchar(ret);
+	terminal_updatecursor();
 }
 
 char keyboard_scan_to_ascii(unsigned char scancode)
@@ -48,18 +47,34 @@ char keyboard_scan_to_ascii(unsigned char scancode)
 	{
 		if (scancode == LSHIFT + 0x80 || scancode == RSHIFT + 0x80)
 		{
-			shift=false;
+			shift=!shift;
 			return '\0';
 		}
 	}
 	else
 	{
-		if (scancode & LSHIFT || scancode & RSHIFT)
+		if (scancode == ENTER)
 		{
-			shift=true;
+			return '\n';
+		}
+		if (scancode == SPACE)
+		{
+			return ' ';
+		}
+		if (scancode == BACKSPACE)
+		{
+			return '\b';
+		}
+		if (scancode == CAPSLOCK)
+		{
+			caps=!caps;
+		}
+		if ((scancode == LSHIFT) || (scancode == RSHIFT))
+		{
+			shift=!shift;
 			return '\0';
 		}
-		if (scancode> numrowstart && scancode < numrowend)
+		if ((scancode >= numrowstart) && (scancode <= numrowend))
 		{
 			//!A != !B is logical XOR
 			if (!shift != !caps)
@@ -68,7 +83,7 @@ char keyboard_scan_to_ascii(unsigned char scancode)
 			}
 			return numrow[scancode-numrowstart];
 		}
-		if (scancode > toprowstart && scancode < toprowend)
+		if ((scancode >= toprowstart) && (scancode <= toprowend))
 		{
 			//!A != !B is logical XOR
 			if (!shift != !caps)
@@ -77,7 +92,7 @@ char keyboard_scan_to_ascii(unsigned char scancode)
 			}
 			return toprow[scancode-toprowstart];
 		}
-		if (scancode > midrowstart && scancode < midrowend)
+		if ((scancode >= midrowstart) && (scancode <= midrowend))
 		{
 			//!A != !B is logical XOR
 			if (!shift != !caps)
@@ -86,7 +101,7 @@ char keyboard_scan_to_ascii(unsigned char scancode)
 			}
 			return midrow[scancode-midrowstart];
 		}
-		if (scancode > bottomrowstart && scancode < bottomrowend)
+		if ((scancode >= bottomrowstart) && (scancode <= bottomrowend))
 		{
 			//!A != !B is logical XOR
 			if (!shift != !caps)

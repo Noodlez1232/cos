@@ -42,5 +42,7 @@ void terminal_bootInfo(const char* string, char infoLevel);
 void terminal_writehexbyte(uint8_t value);
 void terminal_writehexword(uint16_t value);
 void terminal_writehexdword(uint32_t value);
+void terminal_newline();
+void terminal_updatecursor();
 
 #endif

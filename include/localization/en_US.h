@@ -17,12 +17,13 @@ const unsigned char SPACE=0x39;
 const unsigned char ENTER=0x1C;
 const unsigned char BACKSPACE=0x0E;
 
-const unsigned char numrowstart=0x03;
+const unsigned char numrowstart=0x02;
 const unsigned char numrowend=0x0E;
-const unsigned char toprowstart=0x0F;
-const unsigned char toprowend=0x1C;
-const unsigned char midrowstart=0x1D;
-const unsigned char midrowend=0x2A;
-const unsigned char bottomrowstart=0x2A;
-const unsigned char bottomrowend=0x36;
+const unsigned char toprowstart=0x10;
+const unsigned char toprowend=0x1B;
+const unsigned char midrowstart=0x1E;
+const unsigned char midrowend=0x29;
+const unsigned char bottomrowstart=0x2B;
+const unsigned char bottomrowend=0x35;
+
 #endif

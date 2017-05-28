@@ -30,12 +30,14 @@ bool timer_installed = false;
 		clear_interrupts();
 		timer_uninstall();
 	}
+	#if 0
 	terminal_writestring("Ticks: ");
 	terminal_writehexdword(timer_ticks);
 	terminal_putchar('\n');
 	terminal_writestring("Max Ticks: ");
 	terminal_writehexdword(max_ticks);
 	terminal_writeline("");
+	#endif
  }
  
  void timer_wait(unsigned int ticks)
@@ -90,6 +92,9 @@ void timer_delay(uint32_t ms)
 	timer_reset();
 	max_ticks=ms;
 	//Now we give it a dead loop to do until the timer is actually done
-	while (timer_installed);
+	while (timer_installed)
+	{
+		asm volatile ("nop\nnop\nnop\nnop");
+	}
 	terminal_writeline("Done!");
 }
