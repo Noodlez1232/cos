@@ -32,5 +32,6 @@ source/isodir/
 barebones-toolchain/
 cos.sublime-project
 cos.sublime-workspace
-bochsrc*
-bochsrc*.*
+DEADJOE
+bochsdebug.txt
+bochsout.txt
