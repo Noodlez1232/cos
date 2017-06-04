@@ -79,13 +79,25 @@ void set_interrupts()
 //Takes input from an IO port
 unsigned char inportb(unsigned short _port)
 {
-    unsigned char rv;
-    asm volatile("inb %1, %0" : "=a" (rv) : "dN" (_port));
-    return rv;
+	unsigned char rv;
+	asm volatile("inb %1, %0" : "=a" (rv) : "dN" (_port));
+	return rv;
 }
 
 //Outputs to an IO port
 void outportb(unsigned short _port, unsigned char _data)
 {
-    asm volatile("outb %1, %0" : : "dN" (_port), "a" (_data));
+	asm volatile("outb %1, %0" : : "dN" (_port), "a" (_data));
+}
+
+uint16_t inportw(unsigned short _port)
+{
+	uint16_t rv;
+	asm volatile("inw %1, %0" : "=a" (rv) : "dN" (_port));
+	return rv;
+}
+
+void outportw(unsigned short _port, unsigned short _data)
+{
+	asm volatile("outw %1, %0" : : "dN" (_port), "a" (_data));
 }

@@ -15,6 +15,11 @@
 
 //TODO: FINISH THE KEYBOARD
 #include <input/keyboard.h>
+
+//TODO: FINISH THIS TOO
+#include <input/term.h>
+
+
  
  //TODO: Fix the damn timer. I just don't have the time for that, though.
  
@@ -38,7 +43,9 @@ void kernel_main(void)
 	isrs_install();			//Init our ISRs
 	irq_install();			//Init our IRQs
 	keyboard_install();		//Init the keyboard
-	terminal_writestring("System initalized! Welcome to crappy os!\n");
-
+	terminal_writeline("System initalized! Welcome to crappy os!");
+	terminal_writeline("Handing over control to the terminal");
+	//TODO: Make a better way to do this
+	terminal_inputinitalize();
 	halt_with_interrupts();
 }

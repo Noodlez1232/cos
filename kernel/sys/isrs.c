@@ -116,8 +116,9 @@ void fault_handler(regs_t *r)
 			terminal_writehexdword(r->int_no);
 			terminal_putchar(']');
 			terminal_writestring(" Exception. System Halted!\n");
+
+			regdump(r);
 			halt();
-			//regdump(r);
 		
 		#endif
     }

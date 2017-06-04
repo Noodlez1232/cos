@@ -9,6 +9,8 @@ size_t terminal_column;
 uint8_t terminal_color;
 uint16_t* terminal_buffer;
 
+#define MAX_KEYBOARD_BUFFER 1024
+
 char hextable[] = "0123456789ABCDEF";
 
 uint16_t* videoPort;

@@ -18,7 +18,13 @@ void clear_interrupts();
 void set_interrupts();
 void outportb(unsigned short _port, unsigned char _data);
 unsigned char inportb(unsigned short _port);
+uint16_t inportw(unsigned short _port);
+void outportw(unsigned short _port, unsigned short _data);
 
+//outputs a character to the debug console
+#define BochsConsolePrintChar(c) outportb(0xe9, c)
+//stops simulation and breaks into the debug console
+#define BochsBreak() outportw(0x8A00,0x8A00); outportw(0x8A00,0x08AE0);
 
 
 

@@ -44,5 +44,6 @@ void terminal_writehexword(uint16_t value);
 void terminal_writehexdword(uint32_t value);
 void terminal_newline();
 void terminal_updatecursor();
+void terminal_writekeybuffer(unsigned char* keybuffer);
 
 #endif

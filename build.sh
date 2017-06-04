@@ -60,6 +60,9 @@ cd ..
 if [ $1 = "run" ]; then
 	qemu-system-i386 -kernel cos.bin
 fi
+if [ $1 = "bochs" ]; then
+	bochs
+fi
 if [ $1 = ""]; then
 	if grub-file --is-x86-multiboot $OUT; then
 		echo multiboot OS in $OUT confirmed, creating iso
