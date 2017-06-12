@@ -6,6 +6,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdarg.h>
 
 bool strcmp(char* aptr, char* bptr);
 int memcmp(const void* aptr, const void* bptr, size_t size);

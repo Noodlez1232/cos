@@ -13,13 +13,10 @@ void terminal_inputhandler(unsigned char scancode);
 void terminal_inputinitalize();
 void terminal_inputuninstall();
 void terminal_parse_command(char *command);
-void terminal_initcommandfuncs();
 void terminal_installcommand(char *name, command_t func);
 void terminal_clearkeyboardbuffer();
 uint32_t getnumargs(char *command);
 
-void terminal_internalcommand_echo(char *command);
-void terminal_internalcommand_hello(char *command);
-void terminal_internalcommand_cls(char *command);
+
 
 #endif

@@ -19,6 +19,7 @@
 #include <input/keyboard.h>
 //Our input stuffs
 #include <input/term.h>
+#include <input/terminalcommands.h>
 
 
  

@@ -3,6 +3,10 @@
 
 #include <common.h>
 
+volatile bool timer_installed;
+
+typedef void (*timer_handler_t) (uint32_t current_ticks);
+
 void timer_install(uint32_t frequency);
 void timer_handler(regs_t *r);
 void timer_wait(unsigned int ticks);

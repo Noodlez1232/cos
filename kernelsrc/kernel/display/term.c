@@ -166,18 +166,22 @@ void terminal_bootInfo(char* string, char infoLevel)
 	terminal_writestring("[");
 	switch (infoLevel)
 	{
+		//Okay
 		case 0:
 			terminal_color=vga_entry_color(VGA_COLOR_GREEN, VGA_COLOR_BLACK);
 			terminal_writestring("OK");
 			break;
+		//Error
 		case 1:
 			terminal_color=vga_entry_color(VGA_COLOR_RED, VGA_COLOR_BLACK);
 			terminal_writestring("ERR");
 			break;
+		//Info
 		case 2:
 			terminal_color=vga_entry_color(VGA_COLOR_BLUE, VGA_COLOR_BLACK);
 			terminal_writestring("INFO");
 			break;
+		//Unknown
 		default:
 			terminal_color=vga_entry_color(VGA_COLOR_BROWN, VGA_COLOR_BLACK);
 			terminal_writestring("?");

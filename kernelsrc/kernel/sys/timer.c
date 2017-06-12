@@ -11,9 +11,8 @@
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
 //Keeps track of how many ticks our OS has been running for
-unsigned int timer_ticks = 0;
-uint32_t max_ticks = 4294967295; //Max of 32 bits
-bool timer_installed = false;
+volatile unsigned int timer_ticks = 0;
+volatile uint32_t max_ticks = 4294967295; //Max of 32 bits
 
 /*
  *Handles our timer. In this case it's just a tick counter and prints a message every second
@@ -23,21 +22,28 @@ bool timer_installed = false;
  */
  void timer_handler(regs_t *r)
  {
+ 	#if 0
 	//Increment our tick count then check if the ticks are at or over
 	//our set max
+	clear_interrupts();
 	if (++timer_ticks>=max_ticks)
 	{
 		clear_interrupts();
 		timer_uninstall();
+		terminal_writeline("And then here");
 	}
 	#if 0
 	terminal_writestring("Ticks: ");
 	terminal_writehexdword(timer_ticks);
 	terminal_putchar('\n');
-	terminal_writestring("Max Ticks: ");
+	terminal_writestring("Max ticks: ");
 	terminal_writehexdword(max_ticks);
-	terminal_writeline("");
+	terminal_putchar('\n');
 	#endif
+	set_interrupts();
+	#endif
+
+	timer_ticks++;
  }
  
  void timer_wait(unsigned int ticks)
@@ -74,6 +80,7 @@ void timer_uninstall()
 	irq_uninstall_handler(0); //0 is the IRQ for the timer
 	timer_installed=false;
 	set_interrupts();
+	terminal_writeline("Should get here");
 }
 
 
@@ -82,19 +89,14 @@ void timer_phase(uint32_t hz)
 {
 	int divisor = 1193180 / hz;					//Calculate our divisor
 	outportb(0x43, 0x36);						//Send the command byte
-	outportb(0x40, (uint8_t) divisor & 0xFF);	//Set low byte of divisor
-	outportb(0x40, (uint8_t) divisor >> 8);		//Set high byte of divisor
+	outportb(0x40, divisor & 0xFF);				//Set low byte of divisor
+	outportb(0x40, divisor >> 8);				//Set high byte of divisor
 }
 
 void timer_delay(uint32_t ms)
 {
 	timer_install(100);
 	timer_reset();
-	max_ticks=ms;
-	//Now we give it a dead loop to do until the timer is actually done
-	while (timer_installed)
-	{
-		asm volatile ("nop\nnop\nnop\nnop");
-	}
-	terminal_writeline("Done!");
+	timer_wait(ms);
+	timer_uninstall();
 }

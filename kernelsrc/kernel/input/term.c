@@ -1,6 +1,7 @@
 #include <input/term.h>
 #include <input/keyboard.h>
 #include <display/term.h>
+#include <input/terminalcommands.h>
 
 #pragma GCC diagnostic ignored "-Wincompatible-pointer-types"
 #pragma GCC diagnostic ignored "-Wunused-parameter"
@@ -28,46 +29,11 @@ bool command_funcs_allocation_table[TERMINAL_MAX_COMMANDS];
 //Initalize our input so that it can start adding to our buffer
 void terminal_inputinitalize()
 {
+	terminal_bootInfo("Terminal starting", 2);
 	//Initalize our keboard handler
 	keyboardhandlerID = keyboard_installhandler(&terminal_inputhandler);
 	//Initalize all our internal commands
 	terminal_initcommandfuncs();
-}
-
-void terminal_initcommandfuncs()
-{
-	//Install all the internal commands that are included in this file and that are basically required to run
-	terminal_installcommand("hello", &terminal_internalcommand_hello);
-	terminal_installcommand("echo", &terminal_internalcommand_echo);
-	terminal_installcommand("cls", &terminal_internalcommand_cls);
-}
-
-
-
-/*
- *Internal Commands
- */
-//Hello World
-void terminal_internalcommand_hello(char *command)
-{
-	terminal_writeline("Hello World!");
-}
-//Echo
-void terminal_internalcommand_echo(char *command)
-{
-	//This iterates through every single character in command until we get to a space, then we print everything after that
-	char *tmp = command;
-	while (tmp[0]!=' ')
-	{
-		tmp++;
-	}
-	tmp++;
-	terminal_writeline(tmp);
-}
-//Clear screen
-void terminal_internalcommand_cls(char *command)
-{
-	terminal_clear();
 }
 
 
@@ -109,6 +75,11 @@ void terminal_inputhandler(unsigned char scancode)
 	if (scancode==BACKSPACE)
 	{
 		keyboardbuffer[keyboardbuffersize]=0;
+		//Bounds checking is very important
+		if (keyboardbuffersize==0)
+		{
+			return;
+		}
 		keyboardbuffersize--;
 		terminal_putchar('\b');
 		terminal_updatecursor();
