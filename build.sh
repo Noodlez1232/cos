@@ -1,6 +1,11 @@
 #!/bin/bash
 
+###The build script used for building COS
+
 echo Building cos
+echo Make sure your current directory is the same directory that all the source files are in
+
+#Set all the variables that we will be using
 
 CURDIR=`pwd`
 SOURCEDIR=$CURDIR/kernelsrc
@@ -9,10 +14,68 @@ OBJ=$CURDIR/obj
 CFLAGS="-std=gnu99 -ffreestanding -O2 -Wall -Wextra -fdiagnostics-color=auto -Werror=implicit-function-declaration"
 OUT=cos.bin
 ISOOUT=cos.iso
+ISODIR=isodir
 
+#setup our clean function to use throught the thingy
+function cleanUp
+{
+	echo Cleaning up...
+	#Remove the possible output file that is in obj
+	rm $OBJ/$OUT
+	#Remove all the object files that are in the obj dir
+	rm $OBJ/*.o
+	#remove the isodir directory
+	rm -r -f $CURDIR/$ISODIR
+}
+
+#Removes everything but source files
+function prepareForCommit
+{
+	cleanUp
+	#Remove the kernel bin file
+	rm $CURDIR/$OUT
+	#Remove the iso file
+	rm $CURDIR/$ISOOUT
+}
+
+#The function that just makes the iso and stuff
+function makeIso
+{
+	echo Making an iso...
+	if grub-file --is-x86-multiboot $CURDIR/$OUT; then
+		echo multiboot OS in $CURDIR/$OUT confirmed, creating iso at $ISOOUT
+		mkdir -p $CURDIR/$ISODIR/boot/grub
+		cp $OUT $CURDIR/$ISODIR/boot/$OUT
+		cp grub/grub.cfg $CURDIR/$ISODIR/boot/grub/grub.cfg
+		grub-mkrescue -o $CURDIR/$ISOOUT $CURDIR/$ISODIR > /dev/null
+	else
+		echo $CURDIR/$OUT is not multiboot
+	fi
+}
+
+#check to see if all they want to do is clean up all the binary files
+if [ $1 = "clean" ]; then
+	cleanUp
+	exit
+fi
+
+#Check to see if all they want to do is make the iso
+if [ $1 = "makeiso" ]; then
+	makeIso
+	exit
+fi
+
+#prepare for commit
+if [ $1 = "prepareforcommit" ]; then
+	prepareForCommit
+	exit
+fi
+
+#Build the boot file that will be used to boot the machine
 echo Building the boot asm file
 i686-elf-as $SOURCEDIR/boot/boot.s -o obj/boot.o
 
+#Compile all our main kernel files
 echo Compiling kernel c files
 cd $SOURCEDIR
 cd kernel
@@ -20,6 +83,9 @@ for i in *.c; do
 	echo Compiling $i
 	i686-elf-gcc -c $i -o $OBJ/kernel_$i.o $CFLAGS -I$INCLUDE
 done
+
+
+#Assemble all our asm files
 cd asm
 echo Assembling kernel/asm asm files
 for i in *.asm; do
@@ -27,6 +93,8 @@ for i in *.asm; do
 	nasm -felf32 $i -o $OBJ/kernel_asm_$i.o
 done
 cd ..
+
+#Compile all the files that are in the subdirectories
 echo Compiling kernel/display files
 cd display
 for i in *.c; do
@@ -57,42 +125,52 @@ done
 cd ..
 cd ..
 
+#Return to the original directory
+
 cd $CURDIR
+
+
+#Link all the object files
 
 echo Linking all .o files to $OUT
 cd $OBJ
 i686-elf-gcc -T linker.ld -o $OUT -ffreestanding -O2 -nostdlib *.o -lgcc
-echo cleaning up...
-rm ../cos.bin
-rm *.o
-mv cos.bin ../cos.bin
+
+#Move that cos.bin to the dir before
+cp cos.bin ../cos.bin
+
+#Clean up the mess that we made
+cleanUp
 cd ..
 
+#Check all our arguments
+
+#They want to use qemu
 if [ $1 = "qemu" ]; then
+	echo Running qemu
 	qemu-system-i386 -kernel cos.bin
+	exit
 fi
+
+#They want to use bochs
 if [ $1 = "bochs" ]; then
+	makeIso
+	echo running bochs
 	bochs
+	exit
 fi
+
+#If no argument was passed or "iso" was passed, make an iso
 if [ $1 = ""]; then
-	if grub-file --is-x86-multiboot $OUT; then
-		echo multiboot OS in $OUT confirmed, creating iso at $ISOOUT
-		mkdir -p $CURDIR/isodir/boot/grub
-		cp $OUT $CURDIR/isodir/boot/$OUT
-		cp grub/grub.cfg $CURDIR/isodir/boot/grub/grub.cfg
-		grub-mkrescue -o $ISOOUT $CURDIR/isodir > /dev/null
-	else
-		echo $OUT is not multiboot
-	fi
+	makeIso
+	exit
 fi
 if [ $1 = "iso" ]; then
-	if grub-file --is-x86-multiboot $OUT; then
-		echo multiboot OS in $OUT confirmed, creating iso at $ISOOUT
-		mkdir -p $CURDIR/isodir/boot/grub
-		cp $OUT $CURDIR/isodir/boot/$OUT
-		cp grub/grub.cfg $CURDIR/isodir/boot/grub/grub.cfg
-		grub-mkrescue -o $ISOOUT $CURDIR/isodir > /dev/null
-	else
-		echo $OUT is not multiboot
-	fi
+	makeIso
+	exit
+fi
+#They only want the kernel bin file
+if [ $1 = "bin" ]; then
+	echo only making bin file
+	exit
 fi

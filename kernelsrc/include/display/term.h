@@ -45,4 +45,15 @@ void terminal_writehexdword(uint32_t value);
 void terminal_newline();
 void terminal_updatecursor();
 
+
+#if DEBUG == 1
+void terminal_debug_putchar(char c);
+void terminal_debug_writestring(char* data);
+void terminal_debug_write(char* data, size_t size);
+void terminal_debug_writeline(char* data);
+void terminal_debug_writehexbyte(uint8_t value);
+void terminal_debug_writehexword(uint16_t value);
+void terminal_debug_writehexdword(uint32_t value);
+#endif
+
 #endif

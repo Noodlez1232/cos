@@ -45,12 +45,10 @@ void terminal_internalcommand_cls(char *command)
 	terminal_clear();
 }
 
-/*
 void terminal_internalcommand_timertest(char *command)
 {
 	//We wait 100 seconds
 	timer_delay(100);
 
 }
-*/
 

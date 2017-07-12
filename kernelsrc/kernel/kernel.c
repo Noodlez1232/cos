@@ -10,11 +10,12 @@
 #include <sys/idt.h>
 //Our memory stuffs
 #include <sys/boot/multiboot.h>
-//#include <sys/memory/pmm.h> //Can't use the PMM yet
+#include <sys/memory/pmm.h> //Can't use the PMM yet
 //Our interrupt stuffs
 #include <sys/isrs.h>
 #include <sys/irqs.h>
 #include <sys/timer.h>
+#include <sys/syscall.h>
 //Our keyboard stuffs
 #include <input/keyboard.h>
 //Our input stuffs
@@ -37,7 +38,7 @@
 #endif
 
 
-void kernel_main(multiboot_info_t* mbt, unsigned int magic)
+void kernel_main(multiboot_info_t* mbt , uint32_t magic)
 {
 	terminal_initialize();	//Init our terminal
 	if (magic!=MULTIBOOT_BOOTLOADER_MAGIC)
@@ -50,8 +51,9 @@ void kernel_main(multiboot_info_t* mbt, unsigned int magic)
 	init_idt();				//init our amazing IDT
 	isrs_install();			//Init our ISRs
 	irq_install();			//Init our IRQs
+	syscall_install();
 	keyboard_install();		//Init the keyboard
-	//pmm_init(mbt);				//Initalize our physical memory manager
+	pmm_init(mbt);				//Initalize our physical memory manager
 	terminal_writeline("System initalized! Welcome to crappy os!");
 	terminal_writeline("Handing over control to the terminal");
 	//TODO: Make a better way to do this

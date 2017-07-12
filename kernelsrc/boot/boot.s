@@ -66,6 +66,7 @@ _start:
 
 	# We push the pointer  to the multiboot header and the magic number to
 	# the stack to use in our kernel
+
 	push %eax # Magic number. Should contain 0x2BADBOO2
 	push %ebx # Pointer to the multiboot header
 

@@ -34,6 +34,7 @@ void terminal_initialize(void)
 	terminal_column = 0;
 	terminal_color = vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
 	terminal_buffer = (uint16_t*) 0xB8000;
+	//terminal_buffer = (uint16_t*) 0xC00B8000
 	videoPort=(uint16_t*) 0x0463;
 
 	for (size_t y = 0; y < VGA_HEIGHT; y++)
@@ -216,3 +217,66 @@ void terminal_writehexdword(uint32_t value)
 	//Write lower word
 	terminal_writehexword(value & 0xFFFF);
 }
+
+//Our debug functions
+#if DEBUG == 1
+void terminal_debug_putchar(char c)
+{
+//No Virtual machine
+#if VM == 0
+	//Not implemented yet
+}
+//Bochs
+#elif VM == 1
+	//Use the bochs functions
+	outportb(0xe9, c);
+}
+#elif VM == 2
+	//Not implemented yet
+}
+#else
+} //End of terminal_debug_putchar()
+#endif
+
+void terminal_debug_write(char* data, size_t size)
+{
+	for (size_t i = 0; i < size; i++)
+		terminal_debug_putchar(data[i]);
+}
+
+void terminal_debug_writestring(char* data)
+{
+	terminal_debug_write(data, strlen(data));
+}
+
+void terminal_debug_writeline(char* data)
+{
+	terminal_debug_writestring(data);
+	terminal_debug_putchar('\n');
+}
+
+void terminal_debug_writehexbyte(uint8_t value)
+{
+	//Write higher nibble
+	terminal_debug_putchar(hextable[value >> 4]);
+	//Write lower nibble
+	terminal_debug_putchar(hextable[value & 0xF]);
+}
+
+void terminal_debug_writehexword(uint16_t value)
+{
+	//Write higher byte
+	terminal_debug_writehexbyte(value >> 8);
+	//Write lower byte
+	terminal_debug_writehexbyte(value & 0xFF);
+}
+
+void terminal_debug_writehexdword(uint32_t value)
+{
+	//Write higher word
+	terminal_debug_writehexword(value >> 16);
+	//Write lower word
+	terminal_debug_writehexword(value & 0xFFFF);
+}
+
+#endif

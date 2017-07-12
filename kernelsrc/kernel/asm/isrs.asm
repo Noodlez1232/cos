@@ -33,6 +33,10 @@
 [global isr30]
 [global isr31]
 
+
+;This is where our syscall handlers come into play
+[global syscall0] ;The backdoor interrupt (Very insecure, don't play with it)
+
 ;  0: Divide By Zero Exception
 isr0:
     cli
@@ -282,3 +286,23 @@ isr_common_stub:
     popa
     add esp, 8     ; Cleans up the pushed error code and pushed ISR number
     iret           ; pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP!
+
+
+
+;The "Backdoor" syscall
+;This will only really work from kernel mode
+syscall0:
+    ;This is our syscall number
+    push 0
+    jmp syscall_handler_stub
+
+
+;This is our syscall handler. This is the C function we use for our syscalls
+[extern syscall_handler]
+syscall_handler_stub:
+    pusha
+    mov eax, syscall_handler
+    call eax
+    popa
+    add esp, 4
+    iret

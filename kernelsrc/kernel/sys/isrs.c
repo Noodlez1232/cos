@@ -93,7 +93,7 @@ void fault_handler(regs_t *r)
     if (r->int_no < 32)
     {
 		//Check if the OS is in debug mode
-		#if DEBUG == 0
+		#if DEBUG == 1
 		//Nope
 		
 		/*Display the current exception and make sure the user is

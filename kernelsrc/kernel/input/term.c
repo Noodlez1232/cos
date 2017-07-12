@@ -26,14 +26,19 @@ command_t command_funcs[TERMINAL_MAX_COMMANDS];
 //Used to be able to add commands as we please
 bool command_funcs_allocation_table[TERMINAL_MAX_COMMANDS];
 
+//Our string to be used as a prompt (temporary)
+const char* prompt_str = "CS>"; 
+
 //Initalize our input so that it can start adding to our buffer
 void terminal_inputinitalize()
 {
-	terminal_bootInfo("Terminal starting", 2);
+	terminal_bootInfo("Terminal starting\n", 2);
 	//Initalize our keboard handler
 	keyboardhandlerID = keyboard_installhandler(&terminal_inputhandler);
 	//Initalize all our internal commands
 	terminal_initcommandfuncs();
+	terminal_writeline("Welcome to Crappy OS's Crappy Shell (CS)");
+	terminal_writestring(prompt_str);
 }
 
 
@@ -140,12 +145,14 @@ void terminal_parse_command(char *command)
 				handler=command_funcs[i];
 				handler(command);
 				terminal_updatecursor();
+				terminal_writestring(prompt_str);
 				return;
 			}
 		}
 	}
 	//The command wasn't found, so we alert the user and get the hell out of there
 	terminal_writeline("Command not found!");
+	terminal_writestring(prompt_str);
 	return;
 }
 

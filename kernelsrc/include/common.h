@@ -3,6 +3,12 @@
 
 #define DEBUG 1
 
+//0=None, for debugging, use COM1
+//1=Bochs, for debugging, use the Bochs debugger
+//2=QEMU, for debugging, use GDB (When implemented)
+//3=Other, for debugging, use COM1
+#define VM 1
+
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -33,10 +39,10 @@ void outportw(unsigned short _port, unsigned short _data);
 /* This defines what the stack looks like after an ISR was running */
 typedef struct regs
 {
-   unsigned int gs, fs, es, ds;                  // Data segment selector
+   unsigned int gs, fs, es, ds;                  		// Data segment selector
    unsigned int edi, esi, ebp, esp, ebx, edx, ecx, eax; // Pushed by pusha.
-   unsigned int int_no, err_code;    // Interrupt number and error code (if applicable)
-   unsigned int eip, cs, eflags, useresp, ss; // Pushed by the processor automatically.
+   unsigned int int_no, err_code;    					// Interrupt number and error code (if applicable)
+   unsigned int eip, cs, eflags, useresp, ss; 			// Pushed by the processor automatically.
 } regs_t;
 
 #endif
