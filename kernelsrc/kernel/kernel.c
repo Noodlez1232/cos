@@ -53,7 +53,7 @@ void kernel_main(multiboot_info_t* mbt , uint32_t magic)
 	irq_install();			//Init our IRQs
 	syscall_install();
 	keyboard_install();		//Init the keyboard
-	pmm_init(mbt);				//Initalize our physical memory manager
+	pmm_init(mbt);			//Initalize our physical memory manager
 	terminal_writeline("System initalized! Welcome to crappy os!");
 	terminal_writeline("Handing over control to the terminal");
 	//TODO: Make a better way to do this

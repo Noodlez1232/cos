@@ -93,7 +93,9 @@ void terminal_inputhandler(unsigned char scancode)
 	//If enter is pressed, we process the command and then clear the keyboard buffer and go to a new line
 	if (scancode==ENTER)
 	{
-		BochsConsolePrintChar('c');
+		#if DEBUG==1
+		terminal_debug_writeline("Command entered into terminal");
+		#endif
 		if (echokeys)
 			terminal_putchar('\n');
 		terminal_parse_command(&keyboardbuffer);

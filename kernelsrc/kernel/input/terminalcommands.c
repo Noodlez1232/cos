@@ -12,6 +12,8 @@ void terminal_initcommandfuncs()
 	terminal_installcommand("hello", &terminal_internalcommand_hello);
 	terminal_installcommand("echo", &terminal_internalcommand_echo);
 	terminal_installcommand("cls", &terminal_internalcommand_cls);
+	terminal_installcommand("easteregg", &terminal_internalcommand_easteregg);
+	terminal_installcommand("test", &terminal_internalcommand_test);
 }
 
 
@@ -43,6 +45,17 @@ void terminal_internalcommand_echo(char *command)
 void terminal_internalcommand_cls(char *command)
 {
 	terminal_clear();
+}
+
+void terminal_internalcommand_easteregg(char *command)
+{
+	terminal_writeline("Command not found! (Quit snooping around, please... It's not healthy)");
+}
+
+//Quick testing command
+void terminal_internalcommand_test(char *command)
+{
+	//terminal_writehexdword(sizeof(size_t));
 }
 
 void terminal_internalcommand_timertest(char *command)

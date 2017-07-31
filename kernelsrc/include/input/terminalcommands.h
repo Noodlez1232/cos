@@ -9,5 +9,7 @@ void terminal_initcommandfuncs();
 void terminal_internalcommand_echo(char *command);
 void terminal_internalcommand_hello(char *command);
 void terminal_internalcommand_cls(char *command);
+void terminal_internalcommand_easteregg(char *command);
+void terminal_internalcommand_test(char *command);
 
 #endif

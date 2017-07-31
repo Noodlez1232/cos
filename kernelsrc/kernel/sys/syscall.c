@@ -8,5 +8,6 @@ void syscall_install()
 
 void syscall_handler(interrupt_frame_t int_frame, popa_t *r)
 {
-	//Another stub
+	//int_frame=NULL;
+	//popa_t re=r;
 }
