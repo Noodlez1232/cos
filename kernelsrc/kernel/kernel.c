@@ -21,6 +21,7 @@
 //Our input stuffs
 #include <input/term.h>
 #include <input/terminalcommands.h>
+#include <sys/serial.h>
 
 
  
@@ -53,6 +54,7 @@ void kernel_main(multiboot_info_t* mbt , uint32_t magic)
 	irq_install();			//Init our IRQs
 	syscall_install();
 	keyboard_install();		//Init the keyboard
+	serial_init();			//Init the serial port
 	pmm_init(mbt);			//Initalize our physical memory manager
 	terminal_writeline("System initalized! Welcome to crappy os!");
 	terminal_writeline("Handing over control to the terminal");

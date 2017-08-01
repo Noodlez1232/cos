@@ -7,7 +7,7 @@
 //1=Bochs, for debugging, use the Bochs debugger
 //2=QEMU, for debugging, use GDB (When implemented)
 //3=Other, for debugging, use COM1
-#define VM 1
+#define VM 3
 
 #include <stddef.h>
 #include <stdint.h>

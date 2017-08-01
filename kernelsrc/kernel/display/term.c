@@ -1,4 +1,5 @@
 #include <display/term.h>
+#include <sys/serial.h>
 #include <common.h>
 
 static const size_t VGA_WIDTH = 80;
@@ -86,6 +87,7 @@ void terminal_putchar(char c)
 				terminal_scroll();
 		}
 	}
+
 }
 void terminal_updatecursor()
 {
@@ -231,8 +233,13 @@ void terminal_debug_putchar(char c)
 	//Use the bochs functions
 	outportb(0xe9, c);
 }
+//QEMU
 #elif VM == 2
-	//Not implemented yet
+	//stub
+}
+//Other
+#elif VM == 3
+	serial_putchar(c);
 }
 #else
 } //End of terminal_debug_putchar()
