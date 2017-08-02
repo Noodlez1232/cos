@@ -23,8 +23,8 @@ multiboot_memory_map_t* mmap;
 
 void pmm_init(multiboot_info_t* mbt)
 {
-	//We tell the user what we are doing (This is actually mostly for avoiding other error stuffs)
-	terminal_bootInfo("Setting up physical memory manager\n", 2);
+	//We tell the user what we are doing
+	terminal_debug_writeline("Setting up physical memory manager");
 	//Now we check to make sure the memory table was passed (6th bit is the flag for if it was passed or not)
 	if ((mbt->flags & 0x20) != 0x20)
 	{
@@ -60,13 +60,14 @@ void pmm_init(multiboot_info_t* mbt)
 	while (mmap < (multiboot_memory_map_t*)(mbt->mmap_addr + mmap_length))
 	{
 		//Now we get the base addresses of the memory map
-		//mmap_base_addresses[i] = (uint32_t)(mmap->base_addr_low & 0xFFFFFFFF); // | (uint32_t)(mmap->base_addr_high & (0xFFFF << 16));
 		mmap_base_addresses[i] = mmap->addr;
 		//Then we get the lengths of the memory map
-		//mmap_lengths[i] = (uint32_t)mmap->length_low & 0xFFFF;// | (uint32_t)(mmap->length_high & (0xFFFF << 16));
 		mmap_lengths[i] = mmap->len;
+		//Then we get the types from the memory map
 		mmap_types[i] = (uint8_t)(mmap->type & 0xFF);
+		//Increment the current record of the memory map
 		mmap = (multiboot_memory_map_t*) ((uint32_t)mmap + mmap_size + sizeof(mmap_size));
+		//This is incremented to keep track of where we are in allocating blocks
 		i++;
 	}
 	//We make sure that we put the table's length in here
@@ -93,4 +94,29 @@ void print_pmmtable(char *command)
 		terminal_putchar('\n');
 
 	}
+}
+
+//Returns true if the address passed is fine for use, and returns false if it is not
+bool pmm_check_addr(uint32_t addr)
+{
+	uint32_t base_addr;
+	uint32_t length;
+	for (uint8_t i = 0; i<mmap_tables_length; i++)
+	{
+		//We go through every single address space to make sure it is okay with all of them
+		base_addr=mmap_base_addresses[i];
+		length=mmap_lengths[i];
+		if ((addr > base_addr) && addr < length + base_addr)
+		{
+			//So, we've found the block in which the address is in, so we check to make sure that it's good to go
+			if (mmap_types[i]==MULTIBOOT_MEMORY_AVAILABLE)
+				//It is indeed available so we report back it's good to go
+				return true;
+			else
+				//It's not good, so we report back not good to go
+				return false;
+		}
+	}
+	//The block wasn't even found which is way worse, so we just return false
+	return false;
 }

@@ -42,5 +42,4 @@ void init_idt()
 
     /* Points the processor's internal register to the new IDT */
     load_idt();
-	terminal_bootInfo("IDT Loaded\n", 0);
 }

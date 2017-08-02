@@ -77,8 +77,6 @@ void isrs_install()
     idt_set_gate(29, (unsigned)isr29, 0x08, 0x8E);
     idt_set_gate(30, (unsigned)isr30, 0x08, 0x8E);
     idt_set_gate(31, (unsigned)isr31, 0x08, 0x8E);
-	
-	terminal_bootInfo("ISRs installed\n", 0);
 }
 
 /* All of our Exception handling Interrupt Service Routines will

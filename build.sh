@@ -36,6 +36,8 @@ function prepareForCommit
 	rm $CURDIR/$OUT
 	#Remove the iso file
 	rm $CURDIR/$ISOOUT
+	#Remove all the Bochs stuff
+	rm $CURDIR/bochs*.txt
 }
 
 #The function that just makes the iso and stuff

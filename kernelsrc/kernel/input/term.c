@@ -32,7 +32,6 @@ const char* prompt_str = "CS>";
 //Initalize our input so that it can start adding to our buffer
 void terminal_inputinitalize()
 {
-	terminal_bootInfo("Terminal starting\n", 2);
 	//Initalize our keboard handler
 	keyboardhandlerID = keyboard_installhandler(&terminal_inputhandler);
 	//Initalize all our internal commands
@@ -131,7 +130,13 @@ void terminal_inputhandler(unsigned char scancode)
 //Parse the command and check if it exists
 void terminal_parse_command(char *command)
 {
-
+	//Check to make sure that a command was even put in
+	if (strlen(command)==0)
+	{
+		//If not, we just print the prompt again and get the hell out of there
+		terminal_writestring(prompt_str);
+		return;
+	}
 	//Create a temporary buffer to command so that we don't screw anything up
 	char tmp[strlen(command)];
 	memcpy(&tmp, command, strlen(command));

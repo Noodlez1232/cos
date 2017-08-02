@@ -67,7 +67,6 @@ void irq_install()
 	
 	asm volatile("sti"); //Enable all interrupts and allow the IRQ to do its thing
 	
-	terminal_bootInfo("IRQs Loaded\n", 0);
 }
 
 /*Each IRQ ISR points to this function rather than the fault handler we have in

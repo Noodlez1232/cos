@@ -6,7 +6,7 @@
 static const size_t VGA_WIDTH = 80;
 static const size_t VGA_HEIGHT = 25;
  
- //This holds the current row we are on in the terminal
+//This holds the current row we are on in the terminal
 size_t terminal_row;
 //This holds the current column we are on in ther terminal
 size_t terminal_column;
@@ -30,7 +30,7 @@ uint8_t vga_entry_color(enum vga_color fg, enum vga_color bg)
 	return fg | bg << 4;
 }
  
- //Gets a VGA character
+//Gets a VGA character
 uint16_t vga_entry(unsigned char uc, uint8_t color)
 {
 	//A VGA character is 16 bits

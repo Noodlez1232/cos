@@ -20,8 +20,6 @@ void init_gdt()
 	
 	//Call the asm function in loadtables.asm to load the GDT
 	load_gdt((uint32_t)&gdt_ptr);
-	
-	terminal_bootInfo("GDT loaded\n", 0);
 }
 
 

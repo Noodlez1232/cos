@@ -43,7 +43,6 @@ void serial_init()
 
 	//set up the IRQ of the serial port
    irq_install_handler(4, &serial_handler);
-   terminal_bootInfo("Serial initialized\n", 0);
    terminal_debug_writeline("Serial initialized");
 }
 

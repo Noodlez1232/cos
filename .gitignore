@@ -33,5 +33,6 @@ barebones-toolchain/
 cos.sublime-project
 cos.sublime-workspace
 DEADJOE
+bochsrc.bxrc
 bochsdebug.txt
 bochsout.txt

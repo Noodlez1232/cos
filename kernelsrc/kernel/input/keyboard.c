@@ -132,7 +132,6 @@ char keyboard_scan_to_ascii(unsigned char scancode)
 void keyboard_install()
 {
 	irq_install_handler(1, &keyboard_handler);
-	terminal_bootInfo("Keyboard installed\n", 0);
 }
 
 /*Keyboard handler handlers (kek) */
