@@ -33,17 +33,17 @@
 
 void serial_init()
 {
-   outportb(COM1_PORT + INTERRUPT_ENABLE, INTERRUPT_ENABLE_DATA_RECIEVED);    					// Disable all interrupts (Basically turning it into a read-only port)
-   outportb(COM1_PORT + LINE_CONTROL, LINE_CONTROL_DLAB);    			// Enable DLAB (This is used for the baud rate divisor in the DATA port)
-   outportb(COM1_PORT + DATA, 0x03);    								// Set divisor to 3 (lo byte) 38400 baud
-   outportb(COM1_PORT + DATA + 1, 0x00);    							//                  (hi byte)
-   outportb(COM1_PORT + LINE_CONTROL, LINE_CONTROL_CHARACTER_BITS_8);   // 8 bits, no parity, one stop bit
-   outportb(COM1_PORT + INTERRUPT_ID, 0xC7);    						// Enable FIFO, clear them, with 14-byte threshold
-   outportb(COM1_PORT + MODEM_CONTROL, 0x0B);    						// IRQs enabled, RTS/DSR set
+   outportb(COM1_PORT + INTERRUPT_ENABLE, INTERRUPT_ENABLE_DATA_RECIEVED);	// Disable all interrupts (Basically turning it into a read-only port)
+   outportb(COM1_PORT + LINE_CONTROL, LINE_CONTROL_DLAB);    				// Enable DLAB (This is used for the baud rate divisor in the DATA port)
+   outportb(COM1_PORT + DATA, 0x03);    									// Set divisor to 3 (lo byte) 38400 baud
+   outportb(COM1_PORT + DATA + 1, 0x00);    								//                  (hi byte)
+   outportb(COM1_PORT + LINE_CONTROL, LINE_CONTROL_CHARACTER_BITS_8);   	// 8 bits, no parity, one stop bit
+   outportb(COM1_PORT + INTERRUPT_ID, 0xC7);    							// Enable FIFO, clear them, with 14-byte threshold
+   outportb(COM1_PORT + MODEM_CONTROL, 0x0B);    							// IRQs enabled, RTS/DSR set
 
-   //set up the IRQ of the serial port
+	//set up the IRQ of the serial port
    irq_install_handler(4, &serial_handler);
-
+   terminal_bootInfo("Serial initialized\n", 0);
    terminal_debug_writeline("Serial initialized");
 }
 

@@ -37,6 +37,7 @@ void terminal_inputinitalize()
 	keyboardhandlerID = keyboard_installhandler(&terminal_inputhandler);
 	//Initalize all our internal commands
 	terminal_initcommandfuncs();
+	//And we welcome the user
 	terminal_writeline("Welcome to Crappy OS's Crappy Shell (CS)");
 	terminal_writestring(prompt_str);
 }
@@ -64,6 +65,7 @@ void terminal_installcommand(char *name, command_t func)
 //Uninstalls the input handler
 void terminal_inputuninstall()
 {
+	//We call keyboard_uninstallhandler, which uninstalls our handler (duh) by passing the ID that we were given by the handler
 	keyboard_uninstallhandler(keyboardhandlerID);
 }
 
@@ -79,6 +81,7 @@ void terminal_inputhandler(unsigned char scancode)
 	//If a backspace is pressed, we backspace visually and remove a character from the terminal buffer
 	if (scancode==BACKSPACE)
 	{
+		//Clear that character in the buffer
 		keyboardbuffer[keyboardbuffersize]=0;
 		//Bounds checking is very important
 		if (keyboardbuffersize==0)
@@ -86,9 +89,14 @@ void terminal_inputhandler(unsigned char scancode)
 			return;
 		}
 		keyboardbuffersize--;
-		terminal_putchar('\b');
-		terminal_updatecursor();
-		return;
+		//We check if we want to echo the keys that the user is pressing
+		if (echokeys)
+		{
+			//We echo the key that was pressed
+			terminal_putchar('\b');
+			terminal_updatecursor();
+			return;
+		}
 	}
 	//If enter is pressed, we process the command and then clear the keyboard buffer and go to a new line
 	if (scancode==ENTER)
@@ -96,9 +104,13 @@ void terminal_inputhandler(unsigned char scancode)
 		#if DEBUG==1
 		terminal_debug_writeline("Command entered into terminal");
 		#endif
+		//We check if we want to echo the keys that the user is pressing
 		if (echokeys)
+			//We echo the key that was given
 			terminal_putchar('\n');
+		//We parse the command that was given to us
 		terminal_parse_command(&keyboardbuffer);
+		//And after that command was parsed and run (if it existed), we clear the keyboard buffer
 		terminal_clearkeyboardbuffer();
 		return;
 	}
@@ -139,7 +151,7 @@ void terminal_parse_command(char *command)
 		//Check if the command matches anything in the list
 		if (strcmp(&tmp, command_list[i]))
 		{
-			//Check to make sure that command is still installed
+			// It was in the list, so we check to make sure that command is still installed
 			if (command_funcs_allocation_table[i])
 			{
 				//Run the command (passing *command)

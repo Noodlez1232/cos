@@ -42,9 +42,12 @@
 void kernel_main(multiboot_info_t* mbt , uint32_t magic)
 {
 	terminal_initialize();	//Init our terminal
+	terminal_bootInfo("Initalizing COS\n", 2);	//Tell the user that we are initalizing the OS now
+	//We check to make sure the OS was loaded by a multiboot bootloader
 	if (magic!=MULTIBOOT_BOOTLOADER_MAGIC)
 	{
-		terminal_writeline("The kernel will not work properly without a multiboot loader!");
+		//If not, we tell the user that that will not do
+		terminal_bootInfo("Kernel not booted with a multiboot compliant bootloader!\n", 1);
 		terminal_writeline("The kernel will now halt.");
 		halt();
 	}
@@ -56,7 +59,11 @@ void kernel_main(multiboot_info_t* mbt , uint32_t magic)
 	keyboard_install();		//Init the keyboard
 	serial_init();			//Init the serial port
 	pmm_init(mbt);			//Initalize our physical memory manager
-	terminal_writeline("System initalized! Welcome to crappy os!");
+	//We inform the user that everyting went well
+	terminal_bootInfo("COS Initalized\n", 0);
+	//We welcome the user
+	terminal_writeline("Welcome to crappy os!");
+	//Then we inform the user that we will be handing over control to the terminal
 	terminal_writeline("Handing over control to the terminal");
 	//TODO: Make a better way to do this
 	terminal_inputinitalize();

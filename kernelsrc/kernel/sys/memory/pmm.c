@@ -71,7 +71,6 @@ void pmm_init(multiboot_info_t* mbt)
 	}
 	//We make sure that we put the table's length in here
 	mmap_tables_length = i;
-
 	//Install the print_pmmtable command
 	terminal_installcommand("printpmmtable", &print_pmmtable);
 }
@@ -79,29 +78,19 @@ void pmm_init(multiboot_info_t* mbt)
 void print_pmmtable(char *command)
 {
 	terminal_writeline("Physical memory table info:");
-	terminal_writestring("Length: ");
-	terminal_writehexword(mmap_tables_length);
-	terminal_putchar('\n');
-	terminal_writeline("Table:");
 	for (uint8_t i = 0; i < mmap_tables_length; i++)
 	{
 		terminal_writestring("[");
 		terminal_writehexword(i);
-		terminal_writestring("] base address:");
+		terminal_writestring("] Base address:");
 		terminal_writehexdword(mmap_base_addresses[i]);
-		terminal_putchar('\n');
 
-		terminal_writestring("[");
-		terminal_writehexword(i);
-		terminal_writestring("] length:");
+		terminal_writestring(" | Length:");
 		terminal_writehexdword(mmap_lengths[i]);
-		terminal_putchar('\n');
 
-		terminal_writestring("[");
-		terminal_writehexword(i);
-		terminal_writestring("] type:");
+		terminal_writestring(" | Type:");
 		terminal_writehexword(mmap_types[i]);
-		terminal_putchar('\n');		
+		terminal_putchar('\n');
 
 	}
 }
