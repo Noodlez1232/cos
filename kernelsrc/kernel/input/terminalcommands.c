@@ -2,6 +2,7 @@
 #include <input/term.h>
 #include <display/term.h>
 #include <sys/timer.h>
+#include <sys/irqs.h>
 
 #pragma GCC diagnostic ignored "-Wincompatible-pointer-types"
 #pragma GCC diagnostic ignored "-Wunused-parameter"
@@ -14,6 +15,7 @@ void terminal_initcommandfuncs()
 	terminal_installcommand("cls", &terminal_internalcommand_cls);
 	terminal_installcommand("easteregg", &terminal_internalcommand_easteregg);
 	terminal_installcommand("test", &terminal_internalcommand_test);
+	terminal_installcommand("timertest", &terminal_internalcommand_timertest);
 }
 
 
@@ -23,17 +25,19 @@ void terminal_initcommandfuncs()
  */
 
 //Hello World
+
 void terminal_internalcommand_hello(char *command)
 {
 	terminal_writeline("Hello World!");
 }
 
 //Echo
+
 void terminal_internalcommand_echo(char *command)
 {
 	//This iterates through every single character in command until we get to a space, then we print everything after that
 	char *tmp = command;
-	while (tmp[0]!=' ')
+	while (tmp[0] != ' ')
 	{
 		tmp++;
 	}
@@ -42,6 +46,7 @@ void terminal_internalcommand_echo(char *command)
 }
 
 //Clear screen
+
 void terminal_internalcommand_cls(char *command)
 {
 	terminal_clear();
@@ -53,6 +58,7 @@ void terminal_internalcommand_easteregg(char *command)
 }
 
 //Quick testing command
+
 void terminal_internalcommand_test(char *command)
 {
 	//terminal_writehexdword(sizeof(size_t));
@@ -61,6 +67,8 @@ void terminal_internalcommand_test(char *command)
 void terminal_internalcommand_timertest(char *command)
 {
 	//We wait 100 seconds
+	timer_install(1000);
+	timer_reset();
 	timer_delay(100);
 
 }

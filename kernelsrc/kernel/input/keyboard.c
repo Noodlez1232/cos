@@ -10,8 +10,8 @@
  */
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
-bool shift=false;
-bool caps=false;
+bool shift = false;
+bool caps = false;
 
 //KEYBOARD_MAX_HANDLERS is defined in keyboard.h
 
@@ -26,9 +26,12 @@ void keyboard_handler(struct regs *r)
 
 	/* Read from the keyboard's data buffer */
 	scancode = inportb(0x60);
-
-
-	for (unsigned int i = 0; i<=KEYBOARD_MAX_HANDLERS - 1; i++)
+	//Send the end of interrupt signal
+#if DEBUG == 1
+	terminal_debug_writeline("Sending EOI signal for keyboard");
+#endif
+	send_EOI(1);
+	for (unsigned int i = 0; i <= KEYBOARD_MAX_HANDLERS - 1; i++)
 	{
 		if (keyboard_handlers_allocation_table[i])
 		{
@@ -50,14 +53,13 @@ char keyboard_scan_to_ascii(unsigned char scancode)
 	//0x80 is the released bit
 	if (scancode & 0x80)
 	{
-		//We add 0x80 so that we can make sure it is acutally equal
+		//We add 0x80 so that we can make sure it is actually equal
 		if (scancode == LSHIFT + 0x80 || scancode == RSHIFT + 0x80)
 		{
-			shift=!shift;
+			shift = !shift;
 			return '\0';
 		}
-	}
-	//The key was just pressed
+	}//The key was just pressed
 	else
 	{
 		//All our special keys
@@ -75,11 +77,11 @@ char keyboard_scan_to_ascii(unsigned char scancode)
 		}
 		if (scancode == CAPSLOCK)
 		{
-			caps=!caps;
+			caps = !caps;
 		}
 		if ((scancode == LSHIFT) || (scancode == RSHIFT))
 		{
-			shift=!shift;
+			shift = !shift;
 			return '\0';
 		}
 		//Check if a number row key has been pressed
@@ -88,9 +90,9 @@ char keyboard_scan_to_ascii(unsigned char scancode)
 			//!A != !B is logical XOR
 			if (!shift != !caps)
 			{
-				return shiftnumrow[scancode-numrowstart];
+				return shiftnumrow[scancode - numrowstart];
 			}
-			return numrow[scancode-numrowstart];
+			return numrow[scancode - numrowstart];
 		}
 		//Check if the top row keys have been pressed at all
 		if ((scancode >= toprowstart) && (scancode <= toprowend))
@@ -98,9 +100,9 @@ char keyboard_scan_to_ascii(unsigned char scancode)
 			//!A != !B is logical XOR
 			if (!shift != !caps)
 			{
-				return shifttoprow[scancode-toprowstart];
+				return shifttoprow[scancode - toprowstart];
 			}
-			return toprow[scancode-toprowstart];
+			return toprow[scancode - toprowstart];
 		}
 		//Check if the middle row keys have been pressed at all
 		if ((scancode >= midrowstart) && (scancode <= midrowend))
@@ -108,9 +110,9 @@ char keyboard_scan_to_ascii(unsigned char scancode)
 			//!A != !B is logical XOR
 			if (!shift != !caps)
 			{
-				return shiftmidrow[scancode-midrowstart];
+				return shiftmidrow[scancode - midrowstart];
 			}
-			return midrow[scancode-midrowstart];
+			return midrow[scancode - midrowstart];
 		}
 		//Check if the middle row keys have been pressed at all
 		if ((scancode >= bottomrowstart) && (scancode <= bottomrowend))
@@ -118,9 +120,9 @@ char keyboard_scan_to_ascii(unsigned char scancode)
 			//!A != !B is logical XOR
 			if (!shift != !caps)
 			{
-				return shiftbottomrow[scancode-bottomrowstart];
+				return shiftbottomrow[scancode - bottomrowstart];
 			}
-			return bottomrow[scancode-bottomrowstart];
+			return bottomrow[scancode - bottomrowstart];
 		}
 	}
 
@@ -129,33 +131,35 @@ char keyboard_scan_to_ascii(unsigned char scancode)
 }
 
 //Install our keyboard
+
 void keyboard_install()
 {
 	irq_install_handler(1, &keyboard_handler);
 }
 
-/*Keyboard handler handlers (kek) */
+/* Keyboard handler handlers (kek) */
 
 //Uninstalls the handler with the ID of ID
+
 void keyboard_uninstallhandler(uint32_t ID)
 {
 	//Bounds checking is always important
-	if (ID>KEYBOARD_MAX_HANDLERS - 1)
+	if (ID > KEYBOARD_MAX_HANDLERS - 1)
 		return;
-	keyboard_handlers[ID]=0;
-	keyboard_handlers_allocation_table[ID]=false;
+	keyboard_handlers[ID] = 0;
+	keyboard_handlers_allocation_table[ID] = false;
 }
 
 //Sets the handler of handler ID ID to the handler handler
+
 void keyboard_modifyhandler(uint32_t ID, keyboardHandler handler)
 {
 	//Once again, bounds checking is always important
-	if (ID>KEYBOARD_MAX_HANDLERS - 1)
+	if (ID > KEYBOARD_MAX_HANDLERS - 1)
 		return;
-	keyboard_handlers[ID]=handler;
-	keyboard_handlers_allocation_table[ID]=true;
+	keyboard_handlers[ID] = handler;
+	keyboard_handlers_allocation_table[ID] = true;
 }
-
 
 /*
  *Installs a handler to the handler table
@@ -164,12 +168,12 @@ void keyboard_modifyhandler(uint32_t ID, keyboardHandler handler)
  */
 uint32_t keyboard_installhandler(keyboardHandler handler)
 {
-	for (uint32_t i = 0; i<=KEYBOARD_MAX_HANDLERS - 1; i++)
+	for (uint32_t i = 0; i <= KEYBOARD_MAX_HANDLERS - 1; i++)
 	{
 		if (!keyboard_handlers_allocation_table[i])
 		{
-			keyboard_handlers[i]=handler;
-			keyboard_handlers_allocation_table[i]=true;
+			keyboard_handlers[i] = handler;
+			keyboard_handlers_allocation_table[i] = true;
 			return i;
 		}
 	}

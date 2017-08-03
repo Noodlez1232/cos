@@ -49,7 +49,8 @@ void irq_install_handler(uint8_t irq, isr_t handler);
 void irq_install(void);
 void irq_handler(regs_t *r);
 
-void masterEOI();
-void slaveEOI();
+void master_EOI();
+void slave_EOI();
+void send_EOI(uint8_t irq_no);
 
 #endif

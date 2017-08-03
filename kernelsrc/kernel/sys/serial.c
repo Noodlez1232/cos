@@ -17,7 +17,7 @@
 #define LINE_CONTROL_CHARACTER_BITS_7 0x02
 #define LINE_CONTROL_CHARACTER_BITS_8 0x03
 #define LINE_CONTROL_STOP_BITS_1 0x00
-#define LINE_CONTROL_STOP_BITS_2 0x04	//This may also be 1.5 depending on your character bits
+#define LINE_CONTROL_STOP_BITS_2 0x04		//This may also be 1.5 depending on your character bits
 #define LINE_CONTROL_PARITY_BIT_NONE 0x00
 #define LINE_CONTROL_PARITY_BIT_ODD 0x08
 #define LINE_CONTROL_PARITY_BIT_EVEN 0x18
@@ -29,7 +29,7 @@
 #include <sys/irqs.h>
 #include <display/term.h>
 
-
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 
 void serial_init()
 {
@@ -43,7 +43,9 @@ void serial_init()
 
 	//set up the IRQ of the serial port
    irq_install_handler(4, &serial_handler);
+#if DEBUG == 1
    terminal_debug_writeline("Serial initialized");
+#endif
 }
 
 int is_transmit_empty()
@@ -60,5 +62,6 @@ void serial_putchar(char c)
 
 void serial_handler(regs_t *r)
 {
-	char charRecieved = inportb(COM1_PORT + DATA);
+	//char charRecieved = inportb(COM1_PORT + DATA);
+	master_EOI();
 }

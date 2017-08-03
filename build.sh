@@ -11,7 +11,7 @@ CURDIR=`pwd`
 SOURCEDIR=$CURDIR/kernelsrc
 INCLUDE=$SOURCEDIR/include
 OBJ=$CURDIR/obj
-CFLAGS="-std=gnu99 -ffreestanding -O2 -Wall -Wextra -fdiagnostics-color=auto -Werror=implicit-function-declaration"
+CFLAGS="-std=gnu99 -ffreestanding -O2 -Wall -Wextra -fdiagnostics-color=auto -Werror=implicit-function-declaration -lgcc -nostdlib"
 OUT=cos.bin
 ISOOUT=cos.iso
 ISODIR=isodir
@@ -43,15 +43,16 @@ function prepareForCommit
 #The function that just makes the iso and stuff
 function makeIso
 {
-	echo Making an iso...
+	echo Making an ISO...
 	if grub-file --is-x86-multiboot $CURDIR/$OUT; then
-		echo multiboot OS in $CURDIR/$OUT confirmed, creating iso at $ISOOUT
+		echo multiboot OS in $CURDIR/$OUT confirmed, creating ISO at $ISOOUT
 		mkdir -p $CURDIR/$ISODIR/boot/grub
 		cp $OUT $CURDIR/$ISODIR/boot/$OUT
 		cp grub/grub.cfg $CURDIR/$ISODIR/boot/grub/grub.cfg
-		grub-mkrescue -o $CURDIR/$ISOOUT $CURDIR/$ISODIR > /dev/null
+		grub-mkrescue -o $CURDIR/$ISOOUT $CURDIR/$ISODIR --themes=starfield
 	else
 		echo $CURDIR/$OUT is not multiboot
+		echo Unable to create ISO.
 	fi
 }
 
@@ -84,6 +85,7 @@ cd kernel
 for i in *.c; do
 	echo Compiling $i
 	i686-elf-gcc -c $i -o $OBJ/kernel_$i.o $CFLAGS -I$INCLUDE
+	echo
 done
 
 
@@ -93,6 +95,7 @@ echo Assembling kernel/asm asm files
 for i in *.asm; do
 	echo Assembling $i
 	nasm -felf32 $i -o $OBJ/kernel_asm_$i.o
+	echo
 done
 cd ..
 
@@ -102,6 +105,7 @@ cd display
 for i in *.c; do
 	echo Compiling $i
 	i686-elf-gcc -c $i -o $OBJ/kernel_display_$i.o $CFLAGS -I$INCLUDE
+	echo
 done
 cd ..
 echo Compiling kernel/sys fies
@@ -109,12 +113,14 @@ cd sys
 for i in *.c; do
 	echo Compiling $i
 	i686-elf-gcc -c $i -o $OBJ/kernel_sys_$i.o $CFLAGS -I$INCLUDE
+	echo
 done
 echo Compiling kernel/sys/memory files
 cd memory
 for i in *.c; do
 	echo Compiling $i
 	i686-elf-gcc -c $i -o $OBJ/kernel_sys_memory_$i.o $CFLAGS -I$INCLUDE
+	echo
 done
 cd ..
 cd ..
@@ -123,6 +129,7 @@ cd input
 for i in *.c; do
 	echo Compiling $i
 	i686-elf-gcc -c $i -o $OBJ/kernel_input_$i.o $CFLAGS -I$INCLUDE
+	echo
 done
 cd ..
 cd ..

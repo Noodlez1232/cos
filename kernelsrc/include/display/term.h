@@ -38,10 +38,11 @@ void terminal_clear();
 void terminal_writestring(char* data);
 void terminal_writeline(char* data);
 void terminal_setcursor(size_t x, size_t y);
-void terminal_bootInfo(char* string, char infoLevel);
+void terminal_info(char* string, char infoLevel);
 void terminal_writehexbyte(uint8_t value);
 void terminal_writehexword(uint16_t value);
 void terminal_writehexdword(uint32_t value);
+void terminal_itoa(uint32_t value);
 void terminal_newline();
 void terminal_updatecursor();
 
@@ -54,6 +55,7 @@ void terminal_debug_writeline(char* data);
 void terminal_debug_writehexbyte(uint8_t value);
 void terminal_debug_writehexword(uint16_t value);
 void terminal_debug_writehexdword(uint32_t value);
+void terminal_debug_itoa(uint32_t value);
 #endif
 
 #endif

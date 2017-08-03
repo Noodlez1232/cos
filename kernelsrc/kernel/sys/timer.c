@@ -11,7 +11,7 @@
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 
 //Keeps track of how many ticks our OS has been running for
-volatile unsigned int timer_ticks = 0;
+volatile uint32_t timer_ticks = 0;
 volatile uint32_t max_ticks = 4294967295; //Max of 32 bits
 
 /*
@@ -20,42 +20,52 @@ volatile uint32_t max_ticks = 4294967295; //Max of 32 bits
  *happening on the motherboard, blah blah blah...
  *So basically, we just set one second to be about as close as we can get it, 18 ticks
  */
- void timer_handler(regs_t *r)
- {
- 	#if 0
+void timer_handler(regs_t *r)
+{
 	//Increment our tick count then check if the ticks are at or over
 	//our set max
-	clear_interrupts();
-	if (++timer_ticks>=max_ticks)
+#if 0
+	if (++timer_ticks >= max_ticks)
 	{
-		clear_interrupts();
 		timer_uninstall();
 		terminal_writeline("And then here");
+
 	}
-	#if 0
+#endif
+#if 0
 	terminal_writestring("Ticks: ");
 	terminal_writehexdword(timer_ticks);
 	terminal_putchar('\n');
 	terminal_writestring("Max ticks: ");
 	terminal_writehexdword(max_ticks);
 	terminal_putchar('\n');
-	#endif
-	set_interrupts();
-	#endif
-
+#endif
 	timer_ticks++;
- }
- 
- void timer_wait(unsigned int ticks)
- {
+#if DEBUG == 1
+	terminal_debug_writestring("Timer tick: ");
+	terminal_debug_itoa(timer_ticks);
+	terminal_debug_putchar('\n');
+	terminal_debug_writeline("Sending EOI for the timer");
+#endif
+	send_EOI(0);
+}
+
+void timer_wait(uint32_t ticks)
+{
+#if DEBUG == 1
+	terminal_debug_writeline("Timer wait");
+#endif
 	//Get the next tick count that that many ticks will pass
-	timer_ticks=0;
-	unsigned int eticks;
+	timer_ticks = 0;
+	uint32_t eticks;
 	eticks = timer_ticks + ticks;
 	//Now wait until that has been fulfilled
 	while (timer_ticks < eticks);
- }
- 
+#if DEBUG == 1
+	terminal_debug_writeline("Timer done");
+#endif
+}
+
 /*
  *The timer is at IRQ0, so we shall just shove a handler into that, and hope it works
  */
@@ -65,32 +75,39 @@ void timer_install(uint32_t frequency)
 	irq_install_handler(0, &timer_handler);
 	timer_phase(frequency);
 	timer_reset();
-	timer_installed=true;
+	timer_installed = true;
+#if DEBUG == 1
+	terminal_debug_writeline("Timer installed");
+#endif
 }
 
 void timer_reset()
 {
-	max_ticks = 4294967295;
-	timer_ticks=0;
+	max_ticks = 0 - 1;
+	timer_ticks = 0;
+#if DEBUG == 1
+	terminal_debug_writeline("Timer reset");
+#endif
 }
 
 void timer_uninstall()
 {
-	terminal_writeline("Timer uninstalled");
+#if DEBUG == 1
+	terminal_debug_writeline("Timer uninstalled");
+#endif
 	irq_uninstall_handler(0); //0 is the IRQ for the timer
-	timer_installed=false;
-	set_interrupts();
-	terminal_writeline("Should get here");
+	timer_installed = false;
+#if DEBUG == 1
+	terminal_debug_writeline("Should get here");
+#endif
 }
-
-
 
 void timer_phase(uint32_t hz)
 {
-	int divisor = 1193180 / hz;					//Calculate our divisor
-	outportb(0x43, 0x36);						//Send the command byte
-	outportb(0x40, divisor & 0xFF);				//Set low byte of divisor
-	outportb(0x40, divisor >> 8);				//Set high byte of divisor
+	int divisor = 1193180 / hz; //Calculate our divisor
+	outportb(0x43, 0x36); //Send the command byte
+	outportb(0x40, divisor & 0xFF); //Set low byte of divisor
+	outportb(0x40, divisor >> 8); //Set high byte of divisor
 }
 
 void timer_delay(uint32_t ms)
@@ -99,4 +116,9 @@ void timer_delay(uint32_t ms)
 	timer_reset();
 	timer_wait(ms);
 	timer_uninstall();
+}
+
+void timer_set_max_ticks(uint32_t max)
+{
+	max_ticks = max;
 }

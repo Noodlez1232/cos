@@ -7,7 +7,7 @@
 //1=Bochs, for debugging, use the Bochs debugger
 //2=QEMU, for debugging, use GDB (When implemented)
 //3=Other, for debugging, use COM1
-#define VM 3
+#define VM 1
 
 #include <stddef.h>
 #include <stdint.h>
@@ -35,6 +35,7 @@ void outportw(unsigned short _port, unsigned short _data);
 #define BochsBreak() outportw(0x8A00,0x8A00); outportw(0x8A00,0x08AE0);
 
 
+typedef uint32_t phys_addr_t;
 
 /* This defines what the stack looks like after an ISR was running */
 typedef struct regs

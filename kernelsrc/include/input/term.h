@@ -15,6 +15,8 @@ void terminal_inputuninstall();
 void terminal_parse_command(char *command);
 void terminal_installcommand(char *name, command_t func);
 void terminal_clearkeyboardbuffer();
+void terminal_internalcommand_timertest(char *command);
+void terminal_tick();
 uint32_t getnumargs(char *command);
 
 

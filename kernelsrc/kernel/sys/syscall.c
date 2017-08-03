@@ -1,6 +1,8 @@
 #include <sys/isrs.h>
 #include <sys/syscall.h>
 
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+
 void syscall_install()
 {
 	//Stub
