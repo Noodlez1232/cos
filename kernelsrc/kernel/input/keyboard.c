@@ -27,9 +27,6 @@ void keyboard_handler(struct regs *r)
 	/* Read from the keyboard's data buffer */
 	scancode = inportb(0x60);
 	//Send the end of interrupt signal
-#if DEBUG == 1
-	terminal_debug_writeline("Sending EOI signal for keyboard");
-#endif
 	send_EOI(1);
 	for (unsigned int i = 0; i <= KEYBOARD_MAX_HANDLERS - 1; i++)
 	{

@@ -97,7 +97,7 @@ void fault_handler(regs_t *r)
 		/*Display the current exception and make sure the user is
 		 *sufficiently calmed
 		 */
-			terminal_setcolor(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
+			terminal_set_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
 			terminal_clear();
 			terminal_writestring(exception_messages[r->int_no]);
 			terminal_writestring(" Exception. System Halted!\n");
@@ -108,7 +108,7 @@ void fault_handler(regs_t *r)
 		#else
 		//Yep
 			terminal_putchar('\n');
-			terminal_setcolor(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
+			terminal_set_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
 			terminal_writestring(exception_messages[r->int_no]);
 			terminal_putchar('[');
 			terminal_writehexdword(r->int_no);

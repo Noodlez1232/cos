@@ -12,6 +12,10 @@ size_t terminal_row;
 size_t terminal_column;
 //This stores the current color
 uint8_t terminal_color;
+//This stores the current foreground color
+uint8_t terminal_foreground_color;
+//This stores the current background color
+uint8_t terminal_background_color;
 
 //This is a pointer to where the current buffer for the terminal is
 uint16_t* terminal_buffer;
@@ -20,7 +24,7 @@ uint16_t* terminal_buffer;
 char hextable[] = "0123456789ABCDEF";
 
 //This stores the port's address for the video's control
-uint16_t* videoPort;
+uint16_t* terminal_video_port;
 
 
 //Gets a VGA color
@@ -50,12 +54,14 @@ void terminal_initialize(void)
 	//This sets our column to 0 (left side of the screen)
 	terminal_column = 0;
 	//This sets the default color of our terminal (Light grey for the foreground and black for the background)
-	terminal_color = vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
+	terminal_color = vga_entry_color(VGA_COLOR_GREEN, VGA_COLOR_BLACK);
 	//This sets the address of the terminal buffer
 	terminal_buffer = (uint16_t*) 0xB8000;
-	//terminal_buffer = (uint16_t*) 0xC00B8000
+	//terminal_buffer = (uint16_t*) 0xC00B8000;
+	//terminal_buffer = (uint16_t*) 0xC03FF000;
 	//This sets the address of the video port
-	videoPort = (uint16_t*) 0x0463;
+	terminal_video_port = (uint16_t*) 0x0463;
+	//videoPort = (uint16_t*) 0xC0000463;
 
 	//This clears the whole screen by replacing each entry with spaces
 	for (size_t y = 0; y < VGA_HEIGHT; y++)
@@ -72,10 +78,25 @@ void terminal_initialize(void)
 
 //This sets the current color of the terminal
 
-void terminal_setcolor(enum vga_color fg, enum vga_color bg)
+void terminal_set_color(enum vga_color fg, enum vga_color bg)
 {
-	terminal_color = vga_entry_color(fg, bg);
+    terminal_foreground_color = fg;
+    terminal_background_color = bg;
+    terminal_color = vga_entry_color(fg, bg);
 }
+
+void terminal_set_background_color(enum vga_color bg)
+{
+    terminal_background_color = bg;
+    terminal_color = vga_entry_color(terminal_foreground_color, bg);
+}
+
+void terminal_set_foreground_color(enum vga_color fg)
+{
+    terminal_foreground_color = fg;
+    terminal_color = vga_entry_color(fg, terminal_background_color);
+}
+
 
 
 //This puts a vga entry at the coordinates specified and the VGA color given
@@ -145,16 +166,29 @@ void terminal_putchar(char c)
 
 void terminal_updatecursor()
 {
+#if 1
 	//We get the current position of the cursor and where we want it (done in the same fashion as we did in the terminal_putentryat() function)
 	uint16_t position = (terminal_row * VGA_WIDTH) + terminal_column;
 	//Set the cursor port to the LOW byte of the INDEX register
-	outportb(videoPort[0], 0x0F);
+	outportb(terminal_video_port[0], 0x0F);
 	//Now we actually send the low byte of the position to the INDEX register of the video port's cursor port
-	outportb(videoPort[0] + 1, (uint8_t) (position & 0xFF));
+	outportb(terminal_video_port[0] + 1, (uint8_t) (position & 0xFF));
 	//Set the cursor port to the HIGH byte of the INDEX register
-	outportb(videoPort[0], 0x0E);
+	outportb(terminal_video_port[0], 0x0E);
 	//And now we send the higher byte of the position to the INDEX register
-	outportb(videoPort[0] + 1, (uint8_t) ((position >> 8)&0xFF));
+	outportb(terminal_video_port[0] + 1, (uint8_t) ((position >> 8)&0xFF));
+#else
+	//We get the current position of the cursor and where we want it (done in the same fashion as we did in the terminal_putentryat() function)
+	uint16_t position = (terminal_row * VGA_WIDTH) + terminal_column;
+	//Set the cursor port to the LOW byte of the INDEX register
+	outportb(0x3D4, 0x0F);
+	//Now we actually send the low byte of the position to the INDEX register of the video port's cursor port
+	outportb(0x3D4 + 1, (uint8_t) (position & 0xFF));
+	//Set the cursor port to the HIGH byte of the INDEX register
+	outportb(0x3D4, 0x0E);
+	//And now we send the higher byte of the position to the INDEX register
+	outportb(0x3D4 + 1, (uint8_t) ((position >> 8)&0xFF));
+#endif
 }
 
 //Write a set of character data in TTY data according to the data sent and the size given
@@ -259,12 +293,12 @@ void terminal_newline()
 
 void terminal_info(char* string, char infoLevel)
 {
-	terminal_writestring("[");
+	
 	switch (infoLevel)
 	{
 			//Okay
 		case 0:
-			terminal_color = vga_entry_color(VGA_COLOR_GREEN, VGA_COLOR_BLACK);
+			terminal_color = vga_entry_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
 			terminal_writestring("OK");
 			break;
 			//Error
@@ -278,15 +312,26 @@ void terminal_info(char* string, char infoLevel)
 			terminal_writestring("INFO");
 			break;
 			//Unknown
+		case 3:
+			terminal_color = vga_entry_color(VGA_COLOR_LIGHT_BROWN, VGA_COLOR_BLACK);
+			terminal_writestring("WARN");
+			break;
 		default:
 			terminal_color = vga_entry_color(VGA_COLOR_BROWN, VGA_COLOR_BLACK);
 			terminal_writestring("?");
 			break;
 	}
-	terminal_color = vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
+	terminal_color = vga_entry_color(VGA_COLOR_GREEN, VGA_COLOR_BLACK);
 	terminal_writestring("] ");
 	terminal_writestring(string);
 
+}
+
+void terminal_warn(char* string)
+{
+    terminal_writestring("[");
+    terminal_color = vga_entry_color(VGA_COLOR_LIGHT_BROWN, VGA_COLOR_BLACK);
+    terminal_writestring("WARN");
 }
 
 //Write a byte's value in hexadecimal

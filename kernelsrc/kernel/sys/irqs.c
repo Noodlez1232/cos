@@ -12,7 +12,7 @@ void irq_install_handler(uint8_t irq, isr_t handler)
 	terminal_debug_writestring("Installing custom IRQ handler no.");
 	terminal_debug_writehexdword(irq);
 	terminal_debug_writestring(" Pointed at: ");
-	terminal_debug_writehexdword(handler);
+	terminal_debug_writehexdword((uint32_t) handler);
 	terminal_debug_writestring(" With ISR number: ");
 	terminal_debug_putchar('\n');
 #endif
@@ -90,11 +90,6 @@ void irq_handler(regs_t *r)
 	//Check to see if we have a custom IRQ to handle
 	if (irq_routines[r->int_no - 32] != 0)
 	{
-#if DEBUG == 1
-		terminal_debug_writeline("IRQ found");
-		terminal_debug_writehexdword(r->int_no - 32);
-		terminal_debug_putchar('\n');
-#endif
 		//Get the handler from the array of handlers and call it.
 		isr_t handler = irq_routines[r->int_no - 32];
 		handler(r);

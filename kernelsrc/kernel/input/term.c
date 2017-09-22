@@ -171,7 +171,6 @@ void terminal_parse_command(char *command)
 	//Terminate the string there
 	tmp[j] = '\0';
 
-
 	//Go through all the current commands
 	for (uint32_t i = 0; i < TERMINAL_MAX_COMMANDS - 1; i++)
 	{
@@ -182,8 +181,15 @@ void terminal_parse_command(char *command)
 			//still installed
 			if (command_funcs_allocation_table[i])
 			{
+				//The command is installed
+				
+				//Now we put it in the queue to be executed
 				queue = command_funcs[i];
+				//This basically copies over the command that was given over
+				//to the queue_command buffer
 				memcpy(queue_command, command, MAX_KEYBOARD_BUFFER);
+				//And now we get the hell out of here, as we have no more work
+				//to do
 				return;
 			}
 		}

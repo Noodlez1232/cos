@@ -41,10 +41,18 @@ void kernel_main(multiboot_info_t* mbt, uint32_t magic)
 	init_idt(); //Init our amazing IDT
 	isrs_install(); //Init our ISRs
 	irq_install(); //Init our IRQs
-	//syscall_install();
 	keyboard_install(); //Init the keyboard
-	//serial_init();			//Init the serial port
+	serial_init(); //Init the serial port
 	pmm_init(mbt); //Initalize our physical memory manager
+#if 0
+	terminal_writeline("Testing kmalloc");
+	uint32_t* hello;
+	hello = (uint32_t*) kmalloc(1024);
+	hello[5] = 3;
+	terminal_writehexdword((uint32_t) hello);
+#endif
+	//AFTER THIS POINT ON, THE MULTIBOOT INFO TABLE WILL NOT BE AVAILABLE
+	//(insert paging enabler here)
 	//We inform the user that everyting went well
 	terminal_info("COS Initalized\n", 0);
 	//We welcome the user

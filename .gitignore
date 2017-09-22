@@ -30,10 +30,10 @@
 
 source/isodir/
 nbproject/
-barebones-toolchain/
 cos.sublime-project
 cos.sublime-workspace
 DEADJOE
 bochsrc.bxrc
+.bochsrc
 bochsdebug.txt
 bochsout.txt

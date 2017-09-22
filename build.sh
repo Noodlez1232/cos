@@ -74,9 +74,29 @@ if [ $1 = "prepareforcommit" ]; then
 	exit
 fi
 
+if [ $1 = "run" ]; then
+    if [$2 = "bochs"]; then
+        echo running bochs
+        bochs
+        exit
+    fi
+    if [$2 = "qemu"]; then
+	echo running qemu
+	qemu-system-i386 -cdrom $ISOOUT
+    fi
+fi
+
+if [ $1 = "in-ide" ]; then
+    I686_TOOLS=$CURDIR/barebones-toolchain/cross/`uname -m`/bin
+    echo Adding $I686_TOOLS to path
+    export PATH=$I686_TOOLS:$PATH
+fi
+
 #Build the boot file that will be used to boot the machine
 echo Building the boot asm file
-i686-elf-as $SOURCEDIR/boot/boot.s -o obj/boot.o
+ i686-elf-as $SOURCEDIR/boot/boot.s -o obj/boot.o
+# nasm -felf $SOURCEDIR/boot/test.asm -o obj/boot.o
+# i686-elf-as $SOURCEDIR/boot/test.asm -o obj/boot.o
 
 #Compile all our main kernel files
 echo Compiling kernel c files
@@ -85,7 +105,6 @@ cd kernel
 for i in *.c; do
 	echo Compiling $i
 	i686-elf-gcc -c $i -o $OBJ/kernel_$i.o $CFLAGS -I$INCLUDE
-	echo
 done
 
 
@@ -95,7 +114,6 @@ echo Assembling kernel/asm asm files
 for i in *.asm; do
 	echo Assembling $i
 	nasm -felf32 $i -o $OBJ/kernel_asm_$i.o
-	echo
 done
 cd ..
 
@@ -105,7 +123,6 @@ cd display
 for i in *.c; do
 	echo Compiling $i
 	i686-elf-gcc -c $i -o $OBJ/kernel_display_$i.o $CFLAGS -I$INCLUDE
-	echo
 done
 cd ..
 echo Compiling kernel/sys fies
@@ -113,14 +130,12 @@ cd sys
 for i in *.c; do
 	echo Compiling $i
 	i686-elf-gcc -c $i -o $OBJ/kernel_sys_$i.o $CFLAGS -I$INCLUDE
-	echo
 done
 echo Compiling kernel/sys/memory files
 cd memory
 for i in *.c; do
 	echo Compiling $i
 	i686-elf-gcc -c $i -o $OBJ/kernel_sys_memory_$i.o $CFLAGS -I$INCLUDE
-	echo
 done
 cd ..
 cd ..
@@ -129,7 +144,6 @@ cd input
 for i in *.c; do
 	echo Compiling $i
 	i686-elf-gcc -c $i -o $OBJ/kernel_input_$i.o $CFLAGS -I$INCLUDE
-	echo
 done
 cd ..
 cd ..
@@ -144,6 +158,7 @@ cd $CURDIR
 echo Linking all .o files to $OUT
 cd $OBJ
 i686-elf-gcc -T linker.ld -o $OUT -ffreestanding -O2 -nostdlib *.o -lgcc
+# i686-elf-gcc -T test.ld -o $OUT -ffreestanding -O2 -nostdlib *.o -lgcc
 
 #Move that cos.bin to the dir before
 cp cos.bin ../cos.bin
@@ -156,9 +171,10 @@ cd ..
 
 #They want to use qemu
 if [ $1 = "qemu" ]; then
-	echo Running qemu
-	qemu-system-i386 -kernel cos.bin
-	exit
+    makeIso
+    echo Running qemu
+    qemu-system-i386 -cdrom $ISOOUT
+    exit
 fi
 
 #They want to use bochs

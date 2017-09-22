@@ -24,10 +24,11 @@ void halt();
 void halt_with_interrupts();
 void clear_interrupts();
 void set_interrupts();
-void outportb(unsigned short _port, unsigned char _data);
-unsigned char inportb(unsigned short _port);
-uint16_t inportw(unsigned short _port);
-void outportw(unsigned short _port, unsigned short _data);
+void outportb(uint16_t _port, uint8_t _data);
+uint8_t inportb(uint16_t _port);
+uint16_t inportw(uint16_t _port);
+void outportw(uint16_t _port, uint16_t _data);
+uint32_t strtol(char a[]);
 
 //outputs a character to the debug console
 #define BochsConsolePrintChar(c) outportb(0xe9, c)
@@ -36,6 +37,7 @@ void outportw(unsigned short _port, unsigned short _data);
 
 
 typedef uint32_t phys_addr_t;
+typedef uint32_t virt_addr_t;
 
 /* This defines what the stack looks like after an ISR was running */
 typedef struct regs

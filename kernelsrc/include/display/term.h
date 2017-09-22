@@ -29,22 +29,32 @@ uint16_t vga_entry(unsigned char uc, uint8_t color);
 uint8_t vga_entry_color(enum vga_color fg, enum vga_color bg);
 
 void terminal_initialize(void);
-void terminal_setcolor(enum vga_color fg, enum vga_color bg);
+
+void terminal_set_color(enum vga_color fg, enum vga_color bg);
+void terminal_set_background_color(enum vga_color bg);
+void terminal_set_foreground_color(enum vga_color fg);
+
 void terminal_putentryat(char c, uint8_t color, size_t x, size_t y);
 void terminal_putchar(char c);
-void terminal_scroll();
-void terminal_write(char* data, size_t size);
+
 void terminal_clear();
+void terminal_scroll();
+
+void terminal_write(char* data, size_t size);
 void terminal_writestring(char* data);
 void terminal_writeline(char* data);
+
 void terminal_setcursor(size_t x, size_t y);
+void terminal_updatecursor();
+
 void terminal_info(char* string, char infoLevel);
+
 void terminal_writehexbyte(uint8_t value);
 void terminal_writehexword(uint16_t value);
 void terminal_writehexdword(uint32_t value);
 void terminal_itoa(uint32_t value);
+
 void terminal_newline();
-void terminal_updatecursor();
 
 
 #if DEBUG == 1

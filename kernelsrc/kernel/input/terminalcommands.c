@@ -28,7 +28,20 @@ void terminal_initcommandfuncs()
 
 void terminal_internalcommand_hello(char *command)
 {
-	terminal_writeline("Hello World!");
+	//This iterates through every single character in command until we get to a space, then we print everything after that
+	char *tmp = command;
+	while (tmp[0] != ' ')
+	{
+		tmp++;
+	}
+	tmp++;
+	if (strcmp(tmp, "this is a test"))
+	{
+		terminal_writeline("Nice. You've tested it now. Go away, please.");
+	} else
+	{
+		terminal_writeline("Hello World!");	
+	}
 }
 
 //Echo

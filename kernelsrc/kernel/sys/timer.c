@@ -41,29 +41,17 @@ void timer_handler(regs_t *r)
 	terminal_putchar('\n');
 #endif
 	timer_ticks++;
-#if DEBUG == 1
-	terminal_debug_writestring("Timer tick: ");
-	terminal_debug_itoa(timer_ticks);
-	terminal_debug_putchar('\n');
-	terminal_debug_writeline("Sending EOI for the timer");
-#endif
 	send_EOI(0);
 }
 
 void timer_wait(uint32_t ticks)
 {
-#if DEBUG == 1
-	terminal_debug_writeline("Timer wait");
-#endif
 	//Get the next tick count that that many ticks will pass
 	timer_ticks = 0;
 	uint32_t eticks;
 	eticks = timer_ticks + ticks;
 	//Now wait until that has been fulfilled
 	while (timer_ticks < eticks);
-#if DEBUG == 1
-	terminal_debug_writeline("Timer done");
-#endif
 }
 
 /*
@@ -92,13 +80,10 @@ void timer_reset()
 
 void timer_uninstall()
 {
-#if DEBUG == 1
-	terminal_debug_writeline("Timer uninstalled");
-#endif
 	irq_uninstall_handler(0); //0 is the IRQ for the timer
 	timer_installed = false;
 #if DEBUG == 1
-	terminal_debug_writeline("Should get here");
+	terminal_debug_writeline("Timer uninstalled");
 #endif
 }
 
