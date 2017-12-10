@@ -22,8 +22,6 @@ OUT=cos.bin
 ISOOUT=cos.iso
 ISODIR=isodir
 
-echo $CC
-
 #setup our clean function to use throught the thingy
 function cleanUp
 {
