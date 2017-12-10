@@ -1,6 +1,10 @@
 #ifndef _COMMON_H
 #define _COMMON_H 1
 
+
+#define ARCH x86
+
+
 #define DEBUG 1
 
 //0=None, for debugging, use COM1

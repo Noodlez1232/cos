@@ -1,8 +1,7 @@
 #ifndef TERM_H
 #define TERM_H 1
 
-#include <stddef.h>
-#include <stdint.h>
+#include <common.h>
 
 /* Hardware text mode color constants. */
 enum vga_color

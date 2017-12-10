@@ -1,5 +1,6 @@
 #include <display/term.h>
 #include <common.h>
+#include <arch/x86/port.h>
 
 //These variables store the sizes of the character display in character columns and rows
 static const size_t VGA_WIDTH = 80;
@@ -55,11 +56,11 @@ void terminal_initialize(void)
 	//This sets the default color of our terminal (Light grey for the foreground and black for the background)
 	terminal_color = vga_entry_color(VGA_COLOR_GREEN, VGA_COLOR_BLACK);
 	//This sets the address of the terminal buffer
-	terminal_buffer = (uint16_t*) 0xB8000;
+	//terminal_buffer = (uint16_t*) 0xB8000;
 	//terminal_buffer = (uint16_t*) 0xC00B8000;
-	//terminal_buffer = (uint16_t*) 0xC03FF000;
+	terminal_buffer = (uint16_t*) 0xC03FF000;
 	//This sets the address of the video port
-	terminal_video_port = (uint16_t*) 0x0463;
+	//terminal_video_port = (uint16_t*) 0x0463;
 	//videoPort = (uint16_t*) 0xC0000463;
 
 	//This clears the whole screen by replacing each entry with spaces
@@ -165,7 +166,7 @@ void terminal_putchar(char c)
 
 void terminal_updatecursor()
 {
-#if 1
+#if 0
 	//We get the current position of the cursor and where we want it (done in the same fashion as we did in the terminal_putentryat() function)
 	uint16_t position = (terminal_row * VGA_WIDTH) + terminal_column;
 	//Set the cursor port to the LOW byte of the INDEX register

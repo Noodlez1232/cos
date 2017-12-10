@@ -13,9 +13,16 @@ SOURCEDIR=$CURDIR/kernelsrc
 INCLUDE=$SOURCEDIR/include
 OBJ=$CURDIR/obj
 CFLAGS="-std=gnu99 -ffreestanding -O2 -Wall -Wextra -fdiagnostics-color=auto -Werror=implicit-function-declaration -lgcc -nostdlib"
+ARCH="i686-elf"
+CC=$ARCH"-gcc"
+GAS=$ARCH"-as"
+ASM="nasm"
+ASMFLAGS="-felf"
 OUT=cos.bin
 ISOOUT=cos.iso
 ISODIR=isodir
+
+echo $CC
 
 #setup our clean function to use throught the thingy
 function cleanUp
@@ -58,46 +65,58 @@ function makeIso
 }
 
 #check to see if all they want to do is clean up all the binary files
-if [ $1 = "clean" ]; then
+if [ "$1" = "clean" ]; then
 	cleanUp
 	exit
 fi
 
 #Check to see if all they want to do is make the iso
-if [ $1 = "makeiso" ]; then
+if [ "$1" = "makeiso" ]; then
 	makeIso
 	exit
 fi
 
 #prepare for commit
-if [ $1 = "prepareforcommit" ]; then
+if [ "$1" = "prepareforcommit" ]; then
 	prepareForCommit
 	exit
 fi
 
-if [ $1 = "run" ]; then
-    if [$2 = "bochs"]; then
+if [ "$1" = "run" ]; then
+    if [ "$2" = "bochs" ]; then
         echo running bochs
         bochs
         exit
     fi
-    if [$2 = "qemu"]; then
-	echo running qemu
-	qemu-system-i386 -cdrom $ISOOUT
+    if [ "$2" = "qemu" ]; then
+        echo running qemu
+        qemu-system-i386 -cdrom $ISOOUT
     fi
 fi
 
-if [ $1 = "in-ide" ]; then
+if [ "$1" = "in-ide" ]; then
     I686_TOOLS=$CURDIR/barebones-toolchain/cross/`uname -m`/bin
     echo Adding $I686_TOOLS to path
     export PATH=$I686_TOOLS:$PATH
 fi
 
 #Build the boot file that will be used to boot the machine
-echo Building the boot asm file
- i686-elf-as $SOURCEDIR/kernel/arch/x86/boot.s -o obj/boot.o
-# nasm -felf $SOURCEDIR/boot/test.asm -o obj/boot.o
-# i686-elf-as $SOURCEDIR/boot/test.asm -o obj/boot.o
+echo Building the boot.s file
+$GAS $SOURCEDIR/kernel/arch/x86/boot.s -o $OBJ/boot.o
+
+#Assemble all our assembly files
+echo Assembling kernel .asm files
+cd $SOURCEDIR
+cd kernel
+echo Assembling arch/x86 fies
+cd arch
+cd x86
+for i in *.asm; do
+	echo Assembling $i
+	$ASM $ASMFLAGS $i -o $OBJ/arch_x86_asm_$i.o
+done
+cd ..
+cd ..
 
 #Compile all our main kernel files
 echo Compiling kernel c files
@@ -105,8 +124,30 @@ cd $SOURCEDIR
 cd kernel
 for i in *.c; do
 	echo Compiling $i
-	i686-elf-gcc -c $i -o $OBJ/kernel_$i.o $CFLAGS -I$INCLUDE
+	$CC -c $i -o $OBJ/kernel_$i.o $CFLAGS -I$INCLUDE
 done
+echo Compiling display c files
+cd display
+for i in *.c; do
+	echo Compiling $i
+	$CC -c $i -o $OBJ/display_$i.o $CFLAGS -I$INCLUDE
+done
+cd ..
+echo Compiling arch c files
+cd arch
+for i in *.c; do
+	echo Compiling $i
+	$CC -c $i -o $OBJ/arch_$i.o $CFLAGS -I$INCLUDE
+done
+echo Compiling arch/x86 files
+cd x86
+for i in *.c; do
+	echo Compiling $i
+	$CC -c $i -o $OBJ/arch_x86_$i.o $CFLAGS -I$INCLUDE
+done
+cd ..
+cd ..
+
 cd ..
 
 #Return to the original directory
@@ -119,7 +160,6 @@ cd $CURDIR
 echo Linking all .o files to $OUT
 cd $OBJ
 i686-elf-gcc -T linker.ld -o $OUT -ffreestanding -O2 -nostdlib *.o -lgcc
-# i686-elf-gcc -T test.ld -o $OUT -ffreestanding -O2 -nostdlib *.o -lgcc
 
 #Move that cos.bin to the dir before
 cp cos.bin ../cos.bin
@@ -131,7 +171,7 @@ cd ..
 #Check all our arguments
 
 #They want to use qemu
-if [ $1 = "qemu" ]; then
+if [ "$1" = "qemu" ]; then
     makeIso
     echo Running qemu
     qemu-system-i386 -cdrom $ISOOUT
@@ -139,7 +179,7 @@ if [ $1 = "qemu" ]; then
 fi
 
 #They want to use bochs
-if [ $1 = "bochs" ]; then
+if [ "$1" = "bochs" ]; then
 	makeIso
 	echo running bochs
 	bochs
@@ -147,16 +187,16 @@ if [ $1 = "bochs" ]; then
 fi
 
 #If no argument was passed or "iso" was passed, make an iso
-if [ $1 = ""]; then
-	makeIso
-	exit
+if [ "$1" = "" ]; then
+    makeIso
+    exit
 fi
-if [ $1 = "iso" ]; then
-	makeIso
-	exit
+if [ "$1" = "iso" ]; then
+    makeIso
+    exit
 fi
 #They only want the kernel bin file
-if [ $1 = "bin" ]; then
+if [ "$1" = "bin" ]; then
 	echo only making bin file
 	exit
 fi
