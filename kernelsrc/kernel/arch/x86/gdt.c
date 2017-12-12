@@ -15,7 +15,7 @@ void init_gdt()
    gdt_set_gate(3, 0, 0xFFFFFFFF, 0xFA, 0xCF); // User mode code segment
    gdt_set_gate(4, 0, 0xFFFFFFFF, 0xF2, 0xCF); // User mode data segment
 
-   flush_gdt((uint32_t)&gdt_ptr);
+   load_gdt((uint32_t)&gdt_ptr);
 }
 
 // Set the value of one GDT entry.

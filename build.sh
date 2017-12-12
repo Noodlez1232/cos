@@ -155,9 +155,9 @@ cd $CURDIR
 
 #Link all the object files
 
-echo Linking all .o files to $OUT
+echo Linking all .o files in $OBJ to $OUT
 cd $OBJ
-i686-elf-gcc -T linker.ld -o $OUT -ffreestanding -O2 -nostdlib *.o -lgcc
+i686-elf-gcc -T linker.ld -o $OUT -ffreestanding -nostdlib *.o -lgcc
 
 #Move that cos.bin to the dir before
 cp cos.bin ../cos.bin

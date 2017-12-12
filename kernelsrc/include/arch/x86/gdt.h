@@ -27,10 +27,8 @@ typedef struct gdt_ptr_struct gdt_ptr_t;
 
 // Initialisation function is publicly accessible.
 void init_gdt(); 
-// Internal function prototypes.
-void init_gdt();
 void gdt_set_gate(int num, uint32_t base, uint32_t limit, uint32_t access, uint8_t gran);
 
-extern void flush_gdt();
+extern void load_gdt();
 
 #endif
