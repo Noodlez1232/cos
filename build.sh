@@ -145,7 +145,6 @@ for i in *.c; do
 done
 cd ..
 cd ..
-
 cd ..
 
 #Return to the original directory
@@ -180,7 +179,7 @@ fi
 if [ "$1" = "bochs" ]; then
 	makeIso
 	echo running bochs
-	bochs
+	bochs -q
 	exit
 fi
 
