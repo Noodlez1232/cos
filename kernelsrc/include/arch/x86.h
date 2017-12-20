@@ -3,4 +3,5 @@
 
 #include <common.h>
 void arch_init();
+void delay(uint32_t ms);
 #endif

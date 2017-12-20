@@ -42,7 +42,7 @@ char *exception_messages[] =
 	"Reserved"
 };
 
-void isrs_install()
+void init_isrs()
 {
     idt_set_gate(0, (unsigned)isr0, 0x08, 0x8E);
     idt_set_gate(1, (unsigned)isr1, 0x08, 0x8E);
@@ -90,7 +90,7 @@ void fault_handler(regs_t *r)
     if (r->int_no < 32)
     {
 		//Check if the OS is in debug mode
-		#if DEBUG == 1
+		#if DEBUG == 0
 		//Nope
 		
 		/*Display the current exception and make sure the user is

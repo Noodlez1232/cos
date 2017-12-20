@@ -40,7 +40,7 @@ extern void isr29();
 extern void isr30();
 extern void isr31();
 
-void isrs_install();
+void init_isrs();
 void fault_handler(regs_t *r);
 void print_kitty();
 void regdump();

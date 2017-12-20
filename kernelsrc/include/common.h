@@ -5,7 +5,7 @@
 #define ARCH x86
 
 
-#define DEBUG 1
+#define DEBUG 0
 
 //0=None, for debugging, use COM1
 //1=Bochs, for debugging, use the Bochs debugger
