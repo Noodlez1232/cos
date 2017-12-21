@@ -364,3 +364,34 @@ void terminal_writehexdword(uint32_t value)
 	//Write lower word
 	terminal_writehexword(value & 0xFFFF);
 }
+
+void terminal_itoa(uint32_t value)
+{
+	char buffer [12];
+	int i = 0;
+
+	unsigned int n1 = value;
+
+	while (n1 != 0)
+	{
+		buffer [i++] = n1 % 10 + '0';
+		n1 = n1 / 10;
+	}
+
+	buffer [i] = '\0';
+
+	for (int t = 0; t < i / 2; t++)
+	{
+		buffer [t] ^= buffer [i - t - 1];
+		buffer [i - t - 1] ^= buffer [t];
+		buffer [t] ^= buffer [i - t - 1];
+	}
+
+	if (value == 0)
+	{
+		buffer [0] = '0';
+		buffer [1] = '\0';
+	}
+
+	terminal_writestring(buffer);
+}

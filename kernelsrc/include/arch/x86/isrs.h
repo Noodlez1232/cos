@@ -39,7 +39,7 @@ extern void isr28();
 extern void isr29();
 extern void isr30();
 extern void isr31();
-
+typedef void (*isr_t)(regs_t *r);
 void init_isrs();
 void fault_handler(regs_t *r);
 void print_kitty();

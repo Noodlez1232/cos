@@ -1,6 +1,7 @@
 #ifndef _COMMON_H
 #define _COMMON_H 1
 
+#define bochs_magic_breakpoint outportw(0x8A00,0x8A00); outportw(0x8A00,0x08AE0);
 
 #define ARCH x86
 

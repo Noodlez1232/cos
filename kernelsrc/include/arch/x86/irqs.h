@@ -3,6 +3,7 @@
 
 #include <common.h>
 #include <arch/x86/regs.h>
+#include <arch/x86/isrs.h>
 
 extern void irq0();
 extern void irq1();
@@ -44,7 +45,6 @@ extern void irq15();
 void irq_remap(void);
 
 void irq_uninstall_handler(uint8_t irq);
-typedef void (*isr_t)(regs_t *r);
 void irq_install_handler(uint8_t irq, isr_t handler);
 void init_irqs(void);
 void irq_handler(regs_t *r);

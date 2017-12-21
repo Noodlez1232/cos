@@ -11,7 +11,7 @@ void kernel_main()
     
     //Initialize everything arch-specific
     arch_init();
-    
+    delay(1000);
     
 	terminal_writestring("Hello, kernel World!\n");
 }
