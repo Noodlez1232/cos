@@ -8,11 +8,15 @@
 #include <arch/x86/isrs.h>
 #include <arch/x86/irqs.h>
 #include <arch/x86/pit.h>
+#include <arch/x86/paging.h>
 
 #include <display/term.h>
 
 uint32_t timer_ticks;
 bool timer_enabled;
+
+uint32_t pte1[4096];
+uint32_t pte2[4096];
 
 void arch_init()
 {

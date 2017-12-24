@@ -3,15 +3,15 @@
 
 #if ARCH==x86
 #include <arch/x86.h>
+#else
+#error No arch specified or non-compatible arch given
 #endif
- 
 void kernel_main()
 {
 	terminal_initialize();
     
     //Initialize everything arch-specific
     arch_init();
-    delay(1000);
     
 	terminal_writestring("Hello, kernel World!\n");
 }
