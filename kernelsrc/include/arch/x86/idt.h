@@ -3,6 +3,8 @@
 
 #include <common.h>
 
+#define IDT_SIZE 128
+
 /* Defines an IDT entry */
 struct idt_entry
 {

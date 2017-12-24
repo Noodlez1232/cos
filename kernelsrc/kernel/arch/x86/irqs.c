@@ -88,7 +88,6 @@ void init_irqs()
 
 void irq_handler(regs_t *r)
 {
-
 	//Check to see if we have a custom IRQ to handle
 	if (irq_routines[r->int_no - 32] != 0)
 	{

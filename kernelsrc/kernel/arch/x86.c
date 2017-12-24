@@ -20,10 +20,9 @@ void arch_init()
     init_idt();
     init_isrs();
     init_irqs();
-    bochs_magic_breakpoint;
-    pit_install(1000, &x86_pit_handler);
-    timer_enabled = false;
-    timer_ticks = 0;
+//     pit_install(1000, &x86_pit_handler);
+//     timer_enabled = false;
+//     timer_ticks = 0;
     terminal_writestring("Arch inited\n");
 }
 

@@ -2,11 +2,12 @@
 #define _COMMON_H 1
 
 #define bochs_magic_breakpoint outportw(0x8A00,0x8A00); outportw(0x8A00,0x08AE0);
+#define bochs_char(c) outportb(0xe9, c);
 
 #define ARCH x86
 
 
-#define DEBUG 0
+#define DEBUG 1
 
 //0=None, for debugging, use COM1
 //1=Bochs, for debugging, use the Bochs debugger

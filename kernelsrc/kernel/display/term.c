@@ -395,3 +395,104 @@ void terminal_itoa(uint32_t value)
 
 	terminal_writestring(buffer);
 }
+
+
+//Our debug functions
+#if DEBUG == 1
+
+void terminal_debug_putchar(char c)
+{
+	//No Virtual machine
+#    if VM == 0
+	//Not implemented yet
+}
+//Bochs
+#    elif VM == 1
+	//Use the bochs functions
+	outportb(0xe9, c);
+}
+//QEMU
+#    elif VM == 2
+	//stub
+}
+//Other
+#    elif VM == 3
+	//We use the serial's putchar function
+	serial_putchar(c);
+}
+#    else
+} //End of terminal_debug_putchar()
+#    endif
+
+void terminal_debug_write(char* data, size_t size)
+{
+	for (size_t i = 0; i < size; i++)
+		terminal_debug_putchar(data[i]);
+}
+
+void terminal_debug_writestring(char* data)
+{
+	terminal_debug_write(data, strlen(data));
+}
+
+void terminal_debug_writeline(char* data)
+{
+	terminal_debug_writestring(data);
+	terminal_debug_putchar('\n');
+}
+
+void terminal_debug_writehexbyte(uint8_t value)
+{
+	//Write higher nibble
+	terminal_debug_putchar(hextable[value >> 4]);
+	//Write lower nibble
+	terminal_debug_putchar(hextable[value & 0xF]);
+}
+
+void terminal_debug_writehexword(uint16_t value)
+{
+	//Write higher byte
+	terminal_debug_writehexbyte(value >> 8);
+	//Write lower byte
+	terminal_debug_writehexbyte(value & 0xFF);
+}
+
+void terminal_debug_writehexdword(uint32_t value)
+{
+	//Write higher word
+	terminal_debug_writehexword(value >> 16);
+	//Write lower word
+	terminal_debug_writehexword(value & 0xFFFF);
+}
+
+void terminal_debug_itoa(uint32_t value)
+{
+	char buffer [12];
+	int i = 0;
+
+	unsigned int n1 = value;
+
+	while (n1 != 0)
+	{
+		buffer [i++] = n1 % 10 + '0';
+		n1 = n1 / 10;
+	}
+
+	buffer [i] = '\0';
+
+	for (int t = 0; t < i / 2; t++)
+	{
+		buffer [t] ^= buffer [i - t - 1];
+		buffer [i - t - 1] ^= buffer [t];
+		buffer [t] ^= buffer [i - t - 1];
+	}
+
+	if (value == 0)
+	{
+		buffer [0] = '0';
+		buffer [1] = '\0';
+	}
+
+	terminal_debug_writestring(buffer);
+}
+#endif
