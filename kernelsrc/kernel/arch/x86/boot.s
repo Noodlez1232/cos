@@ -23,11 +23,17 @@ stack_top:
 # modules there. This lets the bootloader know it must avoid the addresses.
 .section .bss, "aw", @nobits
 	.align 4096
-boot_pagedir:
+.global _boot_pagedir
+_boot_pagedir:
 	.skip 4096
-boot_pagetab1:
+.global _boot_pagtab1
+.type _boot_pagtab1, @object
+_boot_pagetab1:
 	.skip 4096
 # Further page tables may be required if the kernel grows beyond 3 MiB.
+# In addition, we add a section that will be pushed to the stack for the kernel to use for arch-specific data. This is a 1kb table that we use for it
+arch_data:
+    .skip 1024
 
 # The kernel entry point.
 .section .text
@@ -38,7 +44,7 @@ _start:
 	# TODO: I recall seeing some assembly that used a macro to do the
 	#       conversions to and from physical. Maybe this should be done in this
 	#       code as well?
-	movl $(boot_pagetab1 - 0xC0000000), %edi
+	movl $(_boot_pagetab1 - 0xC0000000), %edi
 	# First address to map is address 0.
 	# TODO: Start at the first kernel page instead. Alternatively map the first
 	#       1 MiB as it can be generally useful, and there's no need to
@@ -70,7 +76,7 @@ _start:
 
 3:
 	# Map VGA video memory to 0xC03FF000 as "present, writable".
-	movl $(0x000B8000 | 0x003), boot_pagetab1 - 0xC0000000 + 1023 * 4
+	movl $(0x000B8000 | 0x003), _boot_pagetab1 - 0xC0000000 + 1023 * 4
 
 	# The page table is used at both page directory entry 0 (virtually from 0x0
 	# to 0x3FFFFF) (thus identity mapping the kernel) and page directory entry
@@ -80,11 +86,11 @@ _start:
 	# would instead page fault if there was no identity mapping.
 
 	# Map the page table to both virtual addresses 0x00000000 and 0xC0000000.
-	movl $(boot_pagetab1 - 0xC0000000 + 0x003), boot_pagedir - 0xC0000000 + 0
-	movl $(boot_pagetab1 - 0xC0000000 + 0x003), boot_pagedir - 0xC0000000 + 768 * 4
+	movl $(_boot_pagetab1 - 0xC0000000 + 0x003), _boot_pagedir - 0xC0000000 + 0
+	movl $(_boot_pagetab1 - 0xC0000000 + 0x003), _boot_pagedir - 0xC0000000 + 768 * 4
 
 	# Set cr3 to the address of the boot_page_directory.
-	movl $(boot_pagedir - 0xC0000000), %ecx
+	movl $(_boot_pagedir - 0xC0000000), %ecx
 	movl %ecx, %cr3
 
 	# Enable paging and the write-protect bit.
@@ -100,14 +106,28 @@ _start:
 	# At this point, paging is fully set up and enabled.
 
 	# Unmap the identity mapping as it is now unnecessary. 
-	movl $0, boot_pagedir + 0
+	movl $0, _boot_pagedir + 0
 
 	# Reload crc3 to force a TLB flush so the changes to take effect.
 	movl %cr3, %ecx
 	movl %ecx, %cr3
 
+	# We add the boot pagedir to the arch data at index 0
+	movl $_boot_pagedir, $_arch_data
+	# And we add the bootpagtab1 to the arch data at index 1
+	movl $(_arch_data + 1), $_boot_pagetab1
+	
 	# Set up the stack.
 	mov $stack_top, %esp
+	
+	#push all the things we need to the stack
+	#multiboot magic
+	push %eax
+	#address to the multiboot table
+	push %ebx
+	#And now the arch specific stuff
+	push $_arch_data
+	
 
 	# Enter the high-level kernel.
 	call kernel_main
