@@ -7,6 +7,7 @@
     void kernel_main(uint32_t* arch_stuff, multiboot_info_t* mbt, uint32_t magic)
     {
         terminal_initialize();
+        terminal_writeline("Loading...");
         arch_init(arch_stuff, mbt, magic);
 #else
     #error No arch specified or non-compatible arch given
@@ -14,6 +15,6 @@
     {
         terminal_initialize();
 #endif
-    
+
 	terminal_writestring("Hello, kernel World!\n");
 }

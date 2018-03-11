@@ -56,9 +56,9 @@ void terminal_initialize(void)
 	//This sets the default color of our terminal (Light grey for the foreground and black for the background)
 	terminal_color = vga_entry_color(VGA_COLOR_GREEN, VGA_COLOR_BLACK);
 	//This sets the address of the terminal buffer
-	//terminal_buffer = (uint16_t*) 0xB8000;
+	terminal_buffer = (uint16_t*) 0xB8000;
 	//terminal_buffer = (uint16_t*) 0xC00B8000;
-	terminal_buffer = (uint16_t*) 0xC03FF000;
+	//terminal_buffer = (uint16_t*) 0xC03FF000;
 	//This sets the address of the video port
 	//terminal_video_port = (uint16_t*) 0x0463;
 	//videoPort = (uint16_t*) 0xC0000463;
@@ -293,7 +293,7 @@ void terminal_newline()
 
 void terminal_info(char* string, char infoLevel)
 {
-	
+
 	switch (infoLevel)
 	{
 			//Okay

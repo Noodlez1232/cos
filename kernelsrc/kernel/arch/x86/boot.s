@@ -1,138 +1,198 @@
-# Declare constants for the multiboot header.
-.set ALIGN,    1<<0             # align loaded modules on page boundaries
-.set MEMINFO,  1<<1             # provide memory map
-.set FLAGS,    ALIGN | MEMINFO  # this is the Multiboot 'flag' field
-.set MAGIC,    0x1BADB002       # 'magic number' lets bootloader find the header
-.set CHECKSUM, -(MAGIC + FLAGS) # checksum of above, to prove we are multiboot
+extern _kernel_start
 
-# Declare a multiboot header that marks the program as a kernel.
-.section .multiboot
-.align 4
-.long MAGIC
-.long FLAGS
-.long CHECKSUM
+;Note: There are some comments still left over from the original barebones. These are distinguished because
+;the person that wrote them puts spaces after their comment tag, I don't. So that's an easy way to distinguish them
 
-# Allocate the initial stack.
-.section .bootstrap_stack, "aw", @nobits
+; Declare constants for the multiboot header.
+MBALIGN  equ  1<<0              ; align loaded modules on page boundaries
+MEMINFO  equ  1<<1              ; provide memory map
+FLAGS    equ  MBALIGN | MEMINFO ; this is the Multiboot 'flag' field
+MAGIC    equ  0x1BADB002        ; 'magic number' lets bootloader find the header
+CHECKSUM equ -(MAGIC + FLAGS)   ; checksum of above, to prove we are multiboot
+
+; Declare a multiboot header that marks the program as a kernel. These are magic
+; values that are documented in the multiboot standard. The bootloader will
+; search for this signature in the first 8 KiB of the kernel file, aligned at a
+; 32-bit boundary. The signature is in its own section so the header can be
+; forced to be within the first 8 KiB of the kernel file.
+
+
+KERNEL_VIRTUAL_BASE equ 0xC0000000
+KERNEL_PAGE equ KERNEL_VIRTUAL_BASE >> 22
+
+KERNEL_BASE equ (_kernel_start - KERNEL_VIRTUAL_BASE)
+
+; The multiboot standard does not define the value of the stack pointer register
+; (esp) and it is up to the kernel to provide a stack. This allocates room for a
+; small stack by creating a symbol at the bottom of it, then allocating 16384
+; bytes for it, and finally creating a symbol at the top. The stack grows
+; downwards on x86. The stack is in its own section so it can be marked nobits,
+; which means the kernel file is smaller because it does not contain an
+; uninitialized stack. The stack on x86 must be 16-byte aligned according to the
+; System V ABI standard and de-facto extensions. The compiler will assume the
+; stack is properly aligned and failure to align the stack will result in
+; undefined behavior.
+section .bss
+align 16
 stack_bottom:
-.skip 16384 # 16 KiB
+resb 16384 ; 16 KiB
 stack_top:
-
-# Preallocate pages used for paging. Don't hard-code addresses and assume they
-# are available, as the bootloader might have loaded its multiboot structures or
-# modules there. This lets the bootloader know it must avoid the addresses.
-.section .bss, "aw", @nobits
-	.align 4096
-.global _boot_pagedir
-_boot_pagedir:
-	.skip 4096
-.global _boot_pagtab1
-.type _boot_pagtab1, @object
-_boot_pagetab1:
-	.skip 4096
-# Further page tables may be required if the kernel grows beyond 3 MiB.
-# In addition, we add a section that will be pushed to the stack for the kernel to use for arch-specific data. This is a 1kb table that we use for it
+;We need to define where we are going to put our paging stuff
+;They must be alligned by 4kib
+align 4096
+BootPageDirectory:
+    resb 4096
+;We use this to identity map the kernel
+BootPageTable1:
+    resb 4096
+;We use this to map the kernel up to the virtual base
+BootPageTable2:
+    resb 4096
 arch_data:
-    .skip 1024
+    resb 256
 
-# The kernel entry point.
-.section .text
-.global _start
-.type _start, @function
+; The linker script specifies _start as the entry point to the kernel and the
+; bootloader will jump to this position once the kernel has been loaded. It
+; doesn't make sense to return from this function as the bootloader is gone.
+; Declare _start as a function symbol with the given symbol size.
+section .text
+align 4
+	dd MAGIC
+	dd FLAGS
+	dd CHECKSUM
+global _start
 _start:
-	# Physical address of boot_pagetab1.
-	# TODO: I recall seeing some assembly that used a macro to do the
-	#       conversions to and from physical. Maybe this should be done in this
-	#       code as well?
-	movl $(_boot_pagetab1 - 0xC0000000), %edi
-	# First address to map is address 0.
-	# TODO: Start at the first kernel page instead. Alternatively map the first
-	#       1 MiB as it can be generally useful, and there's no need to
-	#       specially map the VGA buffer.
-	movl $0, %esi
-	# Map 1023 pages. The 1024th will be the VGA text buffer.
-	movl $1023, %ecx
 
-1:
-	# Only map the kernel.
-	cmpl $(_kernel_start - 0xC0000000), %esi
-	jl 2f
-	cmpl $(_kernel_end - 0xC0000000), %esi
-	jge 3f
+    ;The first thing we need to do is identity map the kernel
+    ;This helps everything when we jump to the kernel
 
-	# Map physical address as "present, writable". Note that this maps
-	# .text and .rodata as writable. Mind security and map them as non-writable.
-	movl %esi, %edx
-	orl $0x003, %edx
-	movl %edx, (%edi)
+    ;We need to map the first page table to the directory
+    ;In order to do this, we must first set up the entry
 
-2:
-	# Size of page is 4096 bytes.
-	addl $4096, %esi
-	# Size of entries in boot_pagetab1 is 4 bytes.
-	addl $4, %edi
-	# Loop to the next entry if we haven't finished.
-	loop 1b
+    ;Load up the page1 into ebx
+    mov ebx, (BootPageTable1 - KERNEL_VIRTUAL_BASE)
 
-3:
-	# Map VGA video memory to 0xC03FF000 as "present, writable".
-	movl $(0x000B8000 | 0x003), _boot_pagetab1 - 0xC0000000 + 1023 * 4
+    ;Now we align the address of the page table and free up that bit for flags in one swoop
+    and ebx, 0xFFFFF000
+    ;And we set its flags. This will be present and read/write.
+    or ebx, 0x2
+    ;And now we put this into the directory at index 0
+    mov [BootPageDirectory], ebx
 
-	# The page table is used at both page directory entry 0 (virtually from 0x0
-	# to 0x3FFFFF) (thus identity mapping the kernel) and page directory entry
-	# 768 (virtually from 0xC0000000 to 0xC03FFFFF) (thus mapping it in the
-	# higher half). The kernel is identity mapped because enabling paging does
-	# not change the next instruction, which continues to be physical. The CPU
-	# would instead page fault if there was no identity mapping.
+    ;And now we set up the page table. This should be easy enough. We just loop through 4kb starting at the kernel base
+    mov eax, 0x0
+    mov ebx, _kernel_start - KERNEL_VIRTUAL_BASE
+    .loopFillTable1:
+        ;Now we align the address of the page table and free up that bit for flags in one swoop
+        and ebx, 0xFFFFF000
+        ;And we set its flags. This will be present and read/write.
+        or ebx, 0x2
+        ;Then we store this at the page entry that we want
+        mov [BootPageTable1+eax*4], ebx
+        ;This is our counter
+        inc eax
+        ;And we set our ebx (our pointer to where we are in the kernel) to point at the next area to map
+        add eax, 4096
+        ;And now we check to see if we are done with that table
+        cmp eax, 1024
+        jne .loopFillTable1
 
-	# Map the page table to both virtual addresses 0x00000000 and 0xC0000000.
-	movl $(_boot_pagetab1 - 0xC0000000 + 0x003), _boot_pagedir - 0xC0000000 + 0
-	movl $(_boot_pagetab1 - 0xC0000000 + 0x003), _boot_pagedir - 0xC0000000 + 768 * 4
+    ;And now we map our virtual kernel
+    ;We can start by mapping the second page table to the directory's second entry
+    mov ebx, (BootPageTable2 - KERNEL_VIRTUAL_BASE)
+    ;Now we align the address of the page table and free up that bit for flags in one swoop
+    and ebx, 0xFFFFF000
+    ;And we set its flags. This will be present and read/write.
+    or ebx, 0x2
+    ;And now we store that table at the entry we calculated earlier
+    mov [BootPageDirectory + (4 * KERNEL_PAGE)], ebx
 
-	# Set cr3 to the address of the boot_page_directory.
-	movl $(_boot_pagedir - 0xC0000000), %ecx
-	movl %ecx, %cr3
+    ;And now we do the same thing with the virtual allocation
+    mov eax, 0x0
+    mov ebx, _kernel_start - KERNEL_VIRTUAL_BASE
+    .loopFillTable2:
+        ;Now we align the address of the page table and free up that bit for flags in one swoop
+        and ebx, 0xFFFFF000
+        ;And we set its flags. This will be present and read/write.
+        or ebx, 0x2
+        ;Then we store this at the page entry that we want
+        mov [BootPageTable2+eax*4], ebx
+        ;This is our counter
+        inc eax
+        ;And we set our ebx (our pointer to where we are in the kernel) to point at the next area to map
+        add eax, 4096
+        ;And now we check to see if we are done with that table
+        cmp eax, 1024
+        jne .loopFillTable2
 
-	# Enable paging and the write-protect bit.
-	movl %cr0, %ecx
-	orl $0x80010000, %ecx
-	movl %ecx, %cr0
+    ;I want the VGA area to be at the end of the kernel area, actually, so I'm gonna set it as the last entry of the virtual kernel
 
-	# Jump to higher half with an absolute jump. 
-	lea 4f, %ecx
-	jmp *%ecx
 
-4:
-	# At this point, paging is fully set up and enabled.
+    ;This is stupid to do but I'm going to do it anyways
+    ;We assume the machine supports PSE and we enable it.
+    ;Load the page directory into control register 3
+    mov ecx, (BootPageDirectory - KERNEL_VIRTUAL_BASE)
+    mov cr3, ecx
+    ;And now we enable PSE
+    ;We can't work on cr4 itself, so we move it into a temp register to work on
+    mov ecx, cr4
+    or ecx, 0x10
+    mov cr4, ecx
+    ;And now we enable paging.
+    mov ecx, cr0
+    or ecx, 0x80000000
+    mov cr0, ecx
 
-	# Unmap the identity mapping as it is now unnecessary. 
-	movl $0, _boot_pagedir + 0
+    ;Now we have paging enabled. Luckily, we identity mapped the kernel, so we can still run, but
+    ;we do want to move to the upper half, Luckily we have something for that.
+    ;All labels are linked at the virtual memory, so all we need to do is load the label's address
+    ;into a general purpose register, and jump to it (absolute jump). It's as simple as that
+    lea ecx, [HigherHalfStart]
+    jmp ecx
 
-	# Reload crc3 to force a TLB flush so the changes to take effect.
-	movl %cr3, %ecx
-	movl %ecx, %cr3
+HigherHalfStart:
+    ;And now we're in the higher half. Cool, yeah? So now we can remove the identity map.
+    ;This is quite simple. All we need to do is just remove that entry in the boot directory
+    ;One thing you will notice is that we don't have to subtract the virtual base because we aren't in the lower half anymore. It's nice.
+    ;mov dword [BootPageDirectory], 0 ;We need to specify dword so that it doesn't just 0 one byte but all four bytes
+    ;And we invalidate that page table
+    ;invlpg [0]
 
-	# We add the boot pagedir to the arch data at index 0
-	movl $_boot_pagedir, $_arch_data
-	# And we add the bootpagtab1 to the arch data at index 1
-	movl $(_arch_data + 1), $_boot_pagetab1
-	
-	# Set up the stack.
-	mov $stack_top, %esp
-	
-	#push all the things we need to the stack
-	#multiboot magic
-	push %eax
-	#address to the multiboot table
-	push %ebx
-	#And now the arch specific stuff
-	push $_arch_data
-	
+	; To set up a stack, we set the esp register to point to the top of our
+	; stack (as it grows downwards on x86 systems). This is necessarily done
+	; in assembly as languages such as C cannot function without a stack.
+	mov esp, stack_top
 
-	# Enter the high-level kernel.
+	; This is a good place to initialize crucial processor state before the
+	; high-level kernel is entered. It's best to minimize the early
+	; environment where crucial features are offline. Note that the
+	; processor is not fully initialized yet: Features such as floating
+	; point instructions and instruction set extensions are not initialized
+	; yet. The GDT should be loaded here. Paging should be enabled here.
+	; C++ features such as global constructors and exceptions will require
+	; runtime support to work as well.
+
+	; Enter the high-level kernel. The ABI requires the stack is 16-byte
+	; aligned at the time of the call instruction (which afterwards pushes
+	; the return pointer of size 4 bytes). The stack was originally 16-byte
+	; aligned above and we've since pushed a multiple of 16 bytes to the
+	; stack since (pushed 0 bytes so far) and the alignment is thus
+	; preserved and the call is well defined.
+        ; note, that if you are building on Windows, C functions may have "_" prefix in assembly: _kernel_main
+	extern kernel_main
 	call kernel_main
 
-	# Infinite loop if the system has nothing more to do.
+	; If the system has nothing more to do, put the computer into an
+	; infinite loop. To do that:
+	; 1) Disable interrupts with cli (clear interrupt enable in eflags).
+	;    They are already disabled by the bootloader, so this is not needed.
+	;    Mind that you might later enable interrupts and return from
+	;    kernel_main (which is sort of nonsensical to do).
+	; 2) Wait for the next interrupt to arrive with hlt (halt instruction).
+	;    Since they are disabled, this will lock up the computer.
+	; 3) Jump to the hlt instruction if it ever wakes up due to a
+	;    non-maskable interrupt occurring or due to system management mode.
 	cli
-1:	hlt
-	jmp 1b
+.hang:	hlt
+	jmp .hang
+.end:

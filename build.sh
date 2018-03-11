@@ -1,4 +1,3 @@
-
 #!/bin/bash
 
 ###The build script used for building COS
@@ -55,7 +54,7 @@ function makeIso
 		mkdir -p $CURDIR/$ISODIR/boot/grub
 		cp $OUT $CURDIR/$ISODIR/boot/$OUT
 		cp grub/grub.cfg $CURDIR/$ISODIR/boot/grub/grub.cfg
-		grub-mkrescue -o $CURDIR/$ISOOUT $CURDIR/$ISODIR --themes=starfield
+		grub-mkrescue -o $CURDIR/$ISOOUT $CURDIR/$ISODIR
 	else
 		echo $CURDIR/$OUT is not multiboot
 		echo Unable to create ISO.
@@ -100,7 +99,7 @@ fi
 
 #Build the boot file that will be used to boot the machine
 echo Building the boot.s file
-$GAS $SOURCEDIR/kernel/arch/x86/boot.s -o $OBJ/boot.o
+$ASM $ASMFLAGS $SOURCEDIR/kernel/arch/x86/boot.s -o $OBJ/boot.o
 
 #Assemble all our assembly files
 echo Assembling kernel .asm files
