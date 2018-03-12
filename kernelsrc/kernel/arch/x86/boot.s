@@ -16,7 +16,6 @@ CHECKSUM equ -(MAGIC + FLAGS)   ; checksum of above, to prove we are multiboot
 ; 32-bit boundary. The signature is in its own section so the header can be
 ; forced to be within the first 8 KiB of the kernel file.
 
-
 KERNEL_VIRTUAL_BASE equ 0xC0000000
 KERNEL_PAGE equ KERNEL_VIRTUAL_BASE >> 22
 
@@ -43,9 +42,11 @@ align 4096
 BootPageDirectory:
     resb 4096
 ;We use this to identity map the kernel
+align 4096
 BootPageTable1:
     resb 4096
 ;We use this to map the kernel up to the virtual base
+align 4096
 BootPageTable2:
     resb 4096
 arch_data:
@@ -62,14 +63,19 @@ align 4
 	dd CHECKSUM
 global _start
 _start:
+    xchg bx, bx
+
+    ;We store the address of the multiboot info and the eax value in the arch_data area
+    mov dword [(arch_data - KERNEL_VIRTUAL_BASE)], eax
+    mov dword [(arch_data - KERNEL_VIRTUAL_BASE) + 4], ebx
 
     ;The first thing we need to do is identity map the kernel
     ;This helps everything when we jump to the kernel
 
     ;We need to map the first page table to the directory
     ;In order to do this, we must first set up the entry
-
     ;Load up the page1 into ebx
+    xchg bx, bx
     mov ebx, (BootPageTable1 - KERNEL_VIRTUAL_BASE)
 
     ;Now we align the address of the page table and free up that bit for flags in one swoop
@@ -77,7 +83,7 @@ _start:
     ;And we set its flags. This will be present and read/write.
     or ebx, 0x2
     ;And now we put this into the directory at index 0
-    mov [BootPageDirectory], ebx
+    mov [(BootPageDirectory - KERNEL_VIRTUAL_BASE)], ebx
 
     ;And now we set up the page table. This should be easy enough. We just loop through 4kb starting at the kernel base
     mov eax, 0x0
@@ -88,11 +94,18 @@ _start:
         ;And we set its flags. This will be present and read/write.
         or ebx, 0x2
         ;Then we store this at the page entry that we want
-        mov [BootPageTable1+eax*4], ebx
+        push eax
+        mov ecx, 4
+        mul ecx
+        mov ecx, eax
+        pop eax
+        mov edx, (BootPageTable1 - KERNEL_VIRTUAL_BASE)
+        add edx, ecx
+        mov [edx], ebx
         ;This is our counter
         inc eax
         ;And we set our ebx (our pointer to where we are in the kernel) to point at the next area to map
-        add eax, 4096
+        add ebx, 4096
         ;And now we check to see if we are done with that table
         cmp eax, 1024
         jne .loopFillTable1
@@ -105,7 +118,7 @@ _start:
     ;And we set its flags. This will be present and read/write.
     or ebx, 0x2
     ;And now we store that table at the entry we calculated earlier
-    mov [BootPageDirectory + (4 * KERNEL_PAGE)], ebx
+    mov [(BootPageDirectory - KERNEL_VIRTUAL_BASE) + (4 * KERNEL_PAGE)], ebx
 
     ;And now we do the same thing with the virtual allocation
     mov eax, 0x0
@@ -116,22 +129,35 @@ _start:
         ;And we set its flags. This will be present and read/write.
         or ebx, 0x2
         ;Then we store this at the page entry that we want
-        mov [BootPageTable2+eax*4], ebx
+        push eax
+        mov ecx, 4
+        mul ecx
+        mov ecx, eax
+        pop eax
+        mov edx, (BootPageTable2 - KERNEL_VIRTUAL_BASE)
+        add edx, ecx
+        mov [edx], ebx
         ;This is our counter
         inc eax
         ;And we set our ebx (our pointer to where we are in the kernel) to point at the next area to map
-        add eax, 4096
+        add ebx, 4096
         ;And now we check to see if we are done with that table
         cmp eax, 1024
         jne .loopFillTable2
 
     ;I want the VGA area to be at the end of the kernel area, actually, so I'm gonna set it as the last entry of the virtual kernel
+    mov ebx, 0xB8000
+    ;This address is already 4kb alligned, so we can just add our flags and add it to our table and get out of there
+    or ebx, 0x2
+    mov [(BootPageTable2 - KERNEL_VIRTUAL_BASE) + 4092], ebx
 
 
     ;This is stupid to do but I'm going to do it anyways
     ;We assume the machine supports PSE and we enable it.
     ;Load the page directory into control register 3
+    xchg bx, bx
     mov ecx, (BootPageDirectory - KERNEL_VIRTUAL_BASE)
+    xchg bx, bx
     mov cr3, ecx
     ;And now we enable PSE
     ;We can't work on cr4 itself, so we move it into a temp register to work on
@@ -140,7 +166,8 @@ _start:
     mov cr4, ecx
     ;And now we enable paging.
     mov ecx, cr0
-    or ecx, 0x80000000
+    or ecx, 0x80000001
+    xchg bx, bx
     mov cr0, ecx
 
     ;Now we have paging enabled. Luckily, we identity mapped the kernel, so we can still run, but
