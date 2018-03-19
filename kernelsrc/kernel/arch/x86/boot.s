@@ -17,7 +17,7 @@ CHECKSUM equ -(MAGIC + FLAGS)   ; checksum of above, to prove we are multiboot
 ; forced to be within the first 8 KiB of the kernel file.
 
 KERNEL_VIRTUAL_BASE equ 0xC0000000
-KERNEL_PAGE equ KERNEL_VIRTUAL_BASE >> 22
+KERNEL_PAGE equ (KERNEL_VIRTUAL_BASE / 0x400000) ;This is the entry which we want for our page (The base divided by 4MiB)
 
 KERNEL_BASE equ (_kernel_start - KERNEL_VIRTUAL_BASE)
 
@@ -43,11 +43,7 @@ BootPageDirectory:
     resb 4096
 ;We use this to identity map the kernel
 align 4096
-BootPageTable1:
-    resb 4096
-;We use this to map the kernel up to the virtual base
-align 4096
-BootPageTable2:
+BootPageTable:
     resb 4096
 arch_data:
     resb 256
@@ -63,127 +59,78 @@ align 4
 	dd CHECKSUM
 global _start
 _start:
-    xchg bx, bx
+    ;Let's start by setting up our page table. We want to allocate 1023 entries,
+    ;leaving the last one for our VGA driver
 
-    ;We store the address of the multiboot info and the eax value in the arch_data area
-    mov dword [(arch_data - KERNEL_VIRTUAL_BASE)], eax
-    mov dword [(arch_data - KERNEL_VIRTUAL_BASE) + 4], ebx
+    ;You will notice I'm subtracting the virtual base from every address. This
+    ;is because as far as our linker knows, these things are offset by the
+    ;base already, meaning we need to subtract that offset to get the physical
+    ;address
 
-    ;The first thing we need to do is identity map the kernel
-    ;This helps everything when we jump to the kernel
+    mov ecx, 1023 ; Our counter
+    mov esi, (_kernel_start - KERNEL_VIRTUAL_BASE) ;Our starting point for addressing
+    mov edi, (BootPageTable - KERNEL_VIRTUAL_BASE) ;Our pointer to the page table
 
-    ;We need to map the first page table to the directory
-    ;In order to do this, we must first set up the entry
-    ;Load up the page1 into ebx
-    xchg bx, bx
-    mov ebx, (BootPageTable1 - KERNEL_VIRTUAL_BASE)
+    .FillPageTableLoop:
+        mov edx, esi ;We move the address to a register to work on without affecting the counter
+        and edx, 0xFFFFF000 ;We align the address by 4KiB and free up space for our flags
+        or edx, 0x003 ;And we set our flags. These are RW and Present
+        mov [edi], edx ;And we store that entry in our table
+        add esi, 4096 ;Each entry addresses 4KiB so we add our source address by that
+        add edi, 4 ;Each entry is 4 bytes long
+        loop .FillPageTableLoop
+    ;Now that we are done filling up our page table, let's work on mapping the VGA area
+    mov edi, (BootPageTable - KERNEL_VIRTUAL_BASE + 4092)
+    mov edx, 0xB8000
+    or edx, 0x003
+    mov [edi], edx
+    ;And now we set up our directory
+    ;We first identity map it. We do this to ensure that the code can continue
+    ;to run even after we set up paging.
+    ;We need to set up the directory entry first
+    mov edx, (BootPageTable - KERNEL_VIRTUAL_BASE) ;We move our table's address into edx
+    or edx, 0x003 ;And we set its flags
+    ;And now we start to put it in our directory
+    ;We start with the identity mapped one
+    mov edi, (BootPageDirectory - KERNEL_VIRTUAL_BASE)
+    mov [edi], edx
+    ;And now we do the virtual one
+    mov edi, (BootPageDirectory - KERNEL_VIRTUAL_BASE + (KERNEL_PAGE * 4))
+    mov [edi], edx
+    ;And now we start to actually enable paging
+    ;We move the directory's address into cr3
+    mov edx, (BootPageDirectory - KERNEL_VIRTUAL_BASE)
+    mov cr3, edx
+    ;And now we turn on paging.
+    ;Set the PSE bit in cr4 to enable 4MB pages
+    mov edx, cr4 ;Move it into a temporary register to modify it
+    or edx, 0x00000010 ;Set the flag
+    mov cr4, edx ;And move it back
+    xchg bx,bx
+    ;And now set the PG bit to enable paging
+    mov edx, cr0 ;Move it into a temporary register to modify it
+    or edx, 0x80000000 ;Set the flag
+    mov cr0, edx ;And move it back
 
-    ;Now we align the address of the page table and free up that bit for flags in one swoop
-    and ebx, 0xFFFFF000
-    ;And we set its flags. This will be present and read/write.
-    or ebx, 0x2
-    ;And now we put this into the directory at index 0
-    mov [(BootPageDirectory - KERNEL_VIRTUAL_BASE)], ebx
-
-    ;And now we set up the page table. This should be easy enough. We just loop through 4kb starting at the kernel base
-    mov eax, 0x0
-    mov ebx, _kernel_start - KERNEL_VIRTUAL_BASE
-    .loopFillTable1:
-        ;Now we align the address of the page table and free up that bit for flags in one swoop
-        and ebx, 0xFFFFF000
-        ;And we set its flags. This will be present and read/write.
-        or ebx, 0x2
-        ;Then we store this at the page entry that we want
-        push eax
-        mov ecx, 4
-        mul ecx
-        mov ecx, eax
-        pop eax
-        mov edx, (BootPageTable1 - KERNEL_VIRTUAL_BASE)
-        add edx, ecx
-        mov [edx], ebx
-        ;This is our counter
-        inc eax
-        ;And we set our ebx (our pointer to where we are in the kernel) to point at the next area to map
-        add ebx, 4096
-        ;And now we check to see if we are done with that table
-        cmp eax, 1024
-        jne .loopFillTable1
-
-    ;And now we map our virtual kernel
-    ;We can start by mapping the second page table to the directory's second entry
-    mov ebx, (BootPageTable2 - KERNEL_VIRTUAL_BASE)
-    ;Now we align the address of the page table and free up that bit for flags in one swoop
-    and ebx, 0xFFFFF000
-    ;And we set its flags. This will be present and read/write.
-    or ebx, 0x2
-    ;And now we store that table at the entry we calculated earlier
-    mov [(BootPageDirectory - KERNEL_VIRTUAL_BASE) + (4 * KERNEL_PAGE)], ebx
-
-    ;And now we do the same thing with the virtual allocation
-    mov eax, 0x0
-    mov ebx, _kernel_start - KERNEL_VIRTUAL_BASE
-    .loopFillTable2:
-        ;Now we align the address of the page table and free up that bit for flags in one swoop
-        and ebx, 0xFFFFF000
-        ;And we set its flags. This will be present and read/write.
-        or ebx, 0x2
-        ;Then we store this at the page entry that we want
-        push eax
-        mov ecx, 4
-        mul ecx
-        mov ecx, eax
-        pop eax
-        mov edx, (BootPageTable2 - KERNEL_VIRTUAL_BASE)
-        add edx, ecx
-        mov [edx], ebx
-        ;This is our counter
-        inc eax
-        ;And we set our ebx (our pointer to where we are in the kernel) to point at the next area to map
-        add ebx, 4096
-        ;And now we check to see if we are done with that table
-        cmp eax, 1024
-        jne .loopFillTable2
-
-    ;I want the VGA area to be at the end of the kernel area, actually, so I'm gonna set it as the last entry of the virtual kernel
-    mov ebx, 0xB8000
-    ;This address is already 4kb alligned, so we can just add our flags and add it to our table and get out of there
-    or ebx, 0x2
-    mov [(BootPageTable2 - KERNEL_VIRTUAL_BASE) + 4092], ebx
-
-
-    ;This is stupid to do but I'm going to do it anyways
-    ;We assume the machine supports PSE and we enable it.
-    ;Load the page directory into control register 3
-    xchg bx, bx
-    mov ecx, (BootPageDirectory - KERNEL_VIRTUAL_BASE)
-    xchg bx, bx
-    mov cr3, ecx
-    ;And now we enable PSE
-    ;We can't work on cr4 itself, so we move it into a temp register to work on
-    mov ecx, cr4
-    or ecx, 0x10
-    mov cr4, ecx
-    ;And now we enable paging.
-    mov ecx, cr0
-    or ecx, 0x80000001
-    xchg bx, bx
-    mov cr0, ecx
-
-    ;Now we have paging enabled. Luckily, we identity mapped the kernel, so we can still run, but
-    ;we do want to move to the upper half, Luckily we have something for that.
-    ;All labels are linked at the virtual memory, so all we need to do is load the label's address
-    ;into a general purpose register, and jump to it (absolute jump). It's as simple as that
-    lea ecx, [HigherHalfStart]
-    jmp ecx
+    ;Now paging is on. The only reason code can still run is because we identity
+    ;mapped this bit of code.
+    ;In order to actually start running code in the higher half, we need to jump
+    ;to it.
+    ;We need to do an absolute jump, not just a relative one. To do this, we load
+    ;the address of the label and jump to the address in that register
+    ;lea edx, [HigherHalfStart] ;We load the address
+    ;jmp edx ;And we jump to it
+    push dword [HigherHalfStart]
+    ret
 
 HigherHalfStart:
-    ;And now we're in the higher half. Cool, yeah? So now we can remove the identity map.
-    ;This is quite simple. All we need to do is just remove that entry in the boot directory
-    ;One thing you will notice is that we don't have to subtract the virtual base because we aren't in the lower half anymore. It's nice.
-    ;mov dword [BootPageDirectory], 0 ;We need to specify dword so that it doesn't just 0 one byte but all four bytes
-    ;And we invalidate that page table
-    ;invlpg [0]
+    ;Finally into the higher half. No more dealing with that stupid crap with
+    ;the virtual base and stuff. Let's get rid of that identity page
+
+    mov dword [BootPageDirectory], 0 ;We need to specify DWORD so it clears the whole entry
+    invlpg [0] ;And we invalidate that page
+
+
 
 	; To set up a stack, we set the esp register to point to the top of our
 	; stack (as it grows downwards on x86 systems). This is necessarily done

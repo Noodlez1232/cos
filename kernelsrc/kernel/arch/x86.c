@@ -24,9 +24,9 @@ extern uint32_t kernel_start;
 void arch_init(uint32_t* arch_stuff, multiboot_info_t* mbt, uint32_t magic)
 {
     init_gdt();
-    //init_idt();
-    //init_isrs();
-    //init_irqs();
+    init_idt();
+    init_isrs();
+    init_irqs();
     //set_paging(arch_stuff[0], arch_stuff[1]);
 //     pit_install(1000, &x86_pit_handler);
 //     timer_enabled = false;

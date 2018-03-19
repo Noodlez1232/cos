@@ -8,7 +8,7 @@
     {
         terminal_initialize();
         terminal_writeline("Loading...");
-        arch_init(arch_stuff, mbt, magic);
+        //arch_init(arch_stuff, mbt, magic);
 #else
     #error No arch specified or non-compatible arch given
     void kernel_main()
