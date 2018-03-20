@@ -10,6 +10,13 @@ FLAGS    equ  MBALIGN | MEMINFO ; this is the Multiboot 'flag' field
 MAGIC    equ  0x1BADB002        ; 'magic number' lets bootloader find the header
 CHECKSUM equ -(MAGIC + FLAGS)   ; checksum of above, to prove we are multiboot
 
+
+
+section .multiboot
+align 4
+	dd MAGIC
+	dd FLAGS
+	dd CHECKSUM
 ; Declare a multiboot header that marks the program as a kernel. These are magic
 ; values that are documented in the multiboot standard. The bootloader will
 ; search for this signature in the first 8 KiB of the kernel file, aligned at a
@@ -17,7 +24,7 @@ CHECKSUM equ -(MAGIC + FLAGS)   ; checksum of above, to prove we are multiboot
 ; forced to be within the first 8 KiB of the kernel file.
 
 KERNEL_VIRTUAL_BASE equ 0xC0000000
-KERNEL_PAGE equ (KERNEL_VIRTUAL_BASE / 0x400000) ;This is the entry which we want for our page (The base divided by 4MiB)
+KERNEL_PAGE equ (KERNEL_VIRTUAL_BASE >> 22) * 4;This is the entry which we want for our page (The base divided by 4MiB)
 
 KERNEL_BASE equ (_kernel_start - KERNEL_VIRTUAL_BASE)
 
@@ -53,10 +60,6 @@ arch_data:
 ; doesn't make sense to return from this function as the bootloader is gone.
 ; Declare _start as a function symbol with the given symbol size.
 section .text
-align 4
-	dd MAGIC
-	dd FLAGS
-	dd CHECKSUM
 global _start
 _start:
     ;Let's start by setting up our page table. We want to allocate 1023 entries,
@@ -92,13 +95,15 @@ _start:
     or edx, 0x003 ;And we set its flags
     ;And now we start to put it in our directory
     ;We start with the identity mapped one
+    xchg bx,bx
     mov edi, (BootPageDirectory - KERNEL_VIRTUAL_BASE)
     mov [edi], edx
     ;And now we do the virtual one
-    mov edi, (BootPageDirectory - KERNEL_VIRTUAL_BASE + (KERNEL_PAGE * 4))
+    mov edi, (BootPageDirectory - KERNEL_VIRTUAL_BASE + (KERNEL_PAGE))
     mov [edi], edx
     ;And now we start to actually enable paging
     ;We move the directory's address into cr3
+    xchg bx,bx
     mov edx, (BootPageDirectory - KERNEL_VIRTUAL_BASE)
     mov cr3, edx
     ;And now we turn on paging.
@@ -118,10 +123,8 @@ _start:
     ;to it.
     ;We need to do an absolute jump, not just a relative one. To do this, we load
     ;the address of the label and jump to the address in that register
-    ;lea edx, [HigherHalfStart] ;We load the address
-    ;jmp edx ;And we jump to it
-    push dword [HigherHalfStart]
-    ret
+    mov edx, HigherHalfStart ;We load the address
+    jmp edx ;And we jump to it
 
 HigherHalfStart:
     ;Finally into the higher half. No more dealing with that stupid crap with
