@@ -5,11 +5,16 @@
 #include <arch/x86/regs.h>
 #include <arch/x86/multiboot.h>
 
+typedef struct arch_info_table
+{
+    uint32_t* multiboot_magic;
+    uint32_t* mbt;
+    uint32_t* boot_page_table;
+} arch_info_table_t;
+
 // Required functions
-void arch_init(uint32_t* arch_stuff, multiboot_info_t* mbt, uint32_t magic);
+void arch_init(uint32_t* arch_stuff);
 void delay(uint32_t ms);
-
-
 
 
 //used locally

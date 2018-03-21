@@ -142,6 +142,13 @@ for i in *.c; do
 	echo Compiling $i
 	$CC -c $i -o $OBJ/arch_x86_$i.o $CFLAGS -I$INCLUDE
 done
+echo Compiling arch/x86/mm files
+cd mm
+for i in *.c; do
+	echo Compiling $i
+	$CC -c $i -o $OBJ/arch_x86_mm_$i.o $CFLAGS -I$INCLUDE
+done
+cd ..
 cd ..
 cd ..
 cd ..

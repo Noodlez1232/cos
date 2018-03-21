@@ -6,6 +6,9 @@
 
 #define ARCH x86
 
+//Ignore int conversion warning, because I honestly couldn't give less of a crap
+#pragma GCC diagnostic ignored "-Wint-conversion"
+
 
 #define DEBUG 1
 

@@ -24,7 +24,7 @@ align 4
 ; forced to be within the first 8 KiB of the kernel file.
 
 KERNEL_VIRTUAL_BASE equ 0xC0000000
-KERNEL_PAGE equ (KERNEL_VIRTUAL_BASE >> 22) * 4;This is the entry which we want for our page (The base divided by 4MiB)
+KERNEL_PAGE_NUMBER equ (KERNEL_VIRTUAL_BASE >> 22);This is the entry which we want for our page (The base divided by 4MiB)
 
 KERNEL_BASE equ (_kernel_start - KERNEL_VIRTUAL_BASE)
 
@@ -43,17 +43,26 @@ align 16
 stack_bottom:
 resb 16384 ; 16 KiB
 stack_top:
-;We need to define where we are going to put our paging stuff
-;They must be alligned by 4kib
 align 4096
-BootPageDirectory:
-    resb 4096
-;We use this to identity map the kernel
-align 4096
-BootPageTable:
-    resb 4096
 arch_data:
     resb 256
+;We need to define where we are going to put our paging stuff
+;They must be alligned by 4kib
+section .data
+align 4096
+BootPageDirectory:
+    ; This page directory entry identity-maps the first 4MB of the 32-bit physical address space.
+    ; All bits are clear except the following:
+    ; bit 7: PS The kernel page is 4MB.
+    ; bit 1: RW The kernel page is read/write.
+    ; bit 0: P  The kernel page is present.
+    ; This entry must be here -- otherwise the kernel will crash immediately after paging is
+    ; enabled because it can't fetch the next instruction! It's ok to unmap this page later.
+    dd 0x00000083
+    times (KERNEL_PAGE_NUMBER - 1) dd 0                 ; Pages before kernel space.
+    ; This page directory entry defines a 4MB page containing the kernel.
+    dd 0x00000083
+    times (1024 - KERNEL_PAGE_NUMBER - 1) dd 0  ; Pages after the kernel image.
 
 ; The linker script specifies _start as the entry point to the kernel and the
 ; bootloader will jump to this position once the kernel has been loaded. It
@@ -62,69 +71,27 @@ arch_data:
 section .text
 global _start
 _start:
-    ;Let's start by setting up our page table. We want to allocate 1023 entries,
-    ;leaving the last one for our VGA driver
+; NOTE: Until paging is set up, the code must be position-independent and use physical
+; addresses, not virtual ones!
+xchg bx,bx
+mov ecx, (BootPageDirectory - KERNEL_VIRTUAL_BASE)
+mov cr3, ecx                                        ; Load Page Directory Base Register.
 
-    ;You will notice I'm subtracting the virtual base from every address. This
-    ;is because as far as our linker knows, these things are offset by the
-    ;base already, meaning we need to subtract that offset to get the physical
-    ;address
+mov ecx, cr4
+or ecx, 0x00000010                          ; Set PSE bit in CR4 to enable 4MB pages.
+mov cr4, ecx
 
-    mov ecx, 1023 ; Our counter
-    mov esi, (_kernel_start - KERNEL_VIRTUAL_BASE) ;Our starting point for addressing
-    mov edi, (BootPageTable - KERNEL_VIRTUAL_BASE) ;Our pointer to the page table
+mov ecx, cr0
+or ecx, 0x80000000                          ; Set PG bit in CR0 to enable paging.
+mov cr0, ecx
 
-    .FillPageTableLoop:
-        mov edx, esi ;We move the address to a register to work on without affecting the counter
-        and edx, 0xFFFFF000 ;We align the address by 4KiB and free up space for our flags
-        or edx, 0x003 ;And we set our flags. These are RW and Present
-        mov [edi], edx ;And we store that entry in our table
-        add esi, 4096 ;Each entry addresses 4KiB so we add our source address by that
-        add edi, 4 ;Each entry is 4 bytes long
-        loop .FillPageTableLoop
-    ;Now that we are done filling up our page table, let's work on mapping the VGA area
-    mov edi, (BootPageTable - KERNEL_VIRTUAL_BASE + 4092)
-    mov edx, 0xB8000
-    or edx, 0x003
-    mov [edi], edx
-    ;And now we set up our directory
-    ;We first identity map it. We do this to ensure that the code can continue
-    ;to run even after we set up paging.
-    ;We need to set up the directory entry first
-    mov edx, (BootPageTable - KERNEL_VIRTUAL_BASE) ;We move our table's address into edx
-    or edx, 0x003 ;And we set its flags
-    ;And now we start to put it in our directory
-    ;We start with the identity mapped one
-    xchg bx,bx
-    mov edi, (BootPageDirectory - KERNEL_VIRTUAL_BASE)
-    mov [edi], edx
-    ;And now we do the virtual one
-    mov edi, (BootPageDirectory - KERNEL_VIRTUAL_BASE + (KERNEL_PAGE))
-    mov [edi], edx
-    ;And now we start to actually enable paging
-    ;We move the directory's address into cr3
-    xchg bx,bx
-    mov edx, (BootPageDirectory - KERNEL_VIRTUAL_BASE)
-    mov cr3, edx
-    ;And now we turn on paging.
-    ;Set the PSE bit in cr4 to enable 4MB pages
-    mov edx, cr4 ;Move it into a temporary register to modify it
-    or edx, 0x00000010 ;Set the flag
-    mov cr4, edx ;And move it back
-    xchg bx,bx
-    ;And now set the PG bit to enable paging
-    mov edx, cr0 ;Move it into a temporary register to modify it
-    or edx, 0x80000000 ;Set the flag
-    mov cr0, edx ;And move it back
-
-    ;Now paging is on. The only reason code can still run is because we identity
-    ;mapped this bit of code.
-    ;In order to actually start running code in the higher half, we need to jump
-    ;to it.
-    ;We need to do an absolute jump, not just a relative one. To do this, we load
-    ;the address of the label and jump to the address in that register
-    mov edx, HigherHalfStart ;We load the address
-    jmp edx ;And we jump to it
+; Start fetching instructions in kernel space.
+; Since eip at this point holds the physical address of this command (approximately 0x00100000)
+; we need to do a long jump to the correct virtual address of StartInHigherHalf which is
+; approximately 0xC0100000.
+xchg bx,bx
+lea ecx, [HigherHalfStart]
+jmp ecx
 
 HigherHalfStart:
     ;Finally into the higher half. No more dealing with that stupid crap with
@@ -134,41 +101,19 @@ HigherHalfStart:
     invlpg [0] ;And we invalidate that page
 
 
-
-	; To set up a stack, we set the esp register to point to the top of our
-	; stack (as it grows downwards on x86 systems). This is necessarily done
-	; in assembly as languages such as C cannot function without a stack.
 	mov esp, stack_top
 
-	; This is a good place to initialize crucial processor state before the
-	; high-level kernel is entered. It's best to minimize the early
-	; environment where crucial features are offline. Note that the
-	; processor is not fully initialized yet: Features such as floating
-	; point instructions and instruction set extensions are not initialized
-	; yet. The GDT should be loaded here. Paging should be enabled here.
-	; C++ features such as global constructors and exceptions will require
-	; runtime support to work as well.
 
-	; Enter the high-level kernel. The ABI requires the stack is 16-byte
-	; aligned at the time of the call instruction (which afterwards pushes
-	; the return pointer of size 4 bytes). The stack was originally 16-byte
-	; aligned above and we've since pushed a multiple of 16 bytes to the
-	; stack since (pushed 0 bytes so far) and the alignment is thus
-	; preserved and the call is well defined.
-        ; note, that if you are building on Windows, C functions may have "_" prefix in assembly: _kernel_main
+	mov [arch_data], eax
+	mov [(arch_data + 4)], ebx
+	lea ecx, [BootPageDirectory]
+	mov [(arch_data + 8)], ecx
+	push arch_data
+
+
 	extern kernel_main
 	call kernel_main
 
-	; If the system has nothing more to do, put the computer into an
-	; infinite loop. To do that:
-	; 1) Disable interrupts with cli (clear interrupt enable in eflags).
-	;    They are already disabled by the bootloader, so this is not needed.
-	;    Mind that you might later enable interrupts and return from
-	;    kernel_main (which is sort of nonsensical to do).
-	; 2) Wait for the next interrupt to arrive with hlt (halt instruction).
-	;    Since they are disabled, this will lock up the computer.
-	; 3) Jump to the hlt instruction if it ever wakes up due to a
-	;    non-maskable interrupt occurring or due to system management mode.
 	cli
 .hang:	hlt
 	jmp .hang

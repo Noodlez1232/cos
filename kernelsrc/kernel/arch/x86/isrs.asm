@@ -14,7 +14,7 @@
 [global isr11]
 [global isr12]
 [global isr13]
-[global isr14]
+[global pgf]
 [global isr15]
 [global isr16]
 [global isr17]
@@ -131,10 +131,10 @@ isr13:
     jmp isr_common_stub
 
 ; 14: Page Fault Exception (With Error Code!)
-isr14:
+pgf:
     cli
     push  14
-    jmp isr_common_stub
+    jmp pf_stub
 
 ; 15: Reserved Exception
 isr15:
@@ -259,6 +259,7 @@ isr31:
 ; We call a C function in here. We need to let the assembler know
 ; that '_fault_handler' exists in another file
 [extern fault_handler]
+[extern pagefault_handler]
 
 ; This is our common ISR stub. It saves the processor state, sets
 ; up for kernel mode segments, calls the C-level fault handler,
@@ -277,6 +278,30 @@ isr_common_stub:
     mov eax, esp   ; Push us the stack
     push eax
     mov eax, fault_handler
+    call eax       ; A special call, preserves the 'eip' register
+    pop eax
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    popa
+    add esp, 8     ; Cleans up the pushed error code and pushed ISR number
+    iret           ; pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP!
+
+pf_stub:
+    pusha
+    push ds
+    push es
+    push fs
+    push gs
+    mov ax, 0x10   ; Load the Kernel Data Segment descriptor!
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov eax, esp   ; Push us the stack
+    push eax
+    mov eax, pagefault_handler
     call eax       ; A special call, preserves the 'eip' register
     pop eax
     pop gs

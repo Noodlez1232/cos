@@ -58,7 +58,7 @@ void init_isrs()
     idt_set_gate(11, (unsigned)isr11, 0x08, 0x8E);
     idt_set_gate(12, (unsigned)isr12, 0x08, 0x8E);
     idt_set_gate(13, (unsigned)isr13, 0x08, 0x8E);
-    idt_set_gate(14, (unsigned)isr14, 0x08, 0x8E);
+    idt_set_gate(14, (unsigned)pgf, 0x08, 0x8E);
     idt_set_gate(15, (unsigned)isr15, 0x08, 0x8E);
     idt_set_gate(16, (unsigned)isr16, 0x08, 0x8E);
     idt_set_gate(17, (unsigned)isr17, 0x08, 0x8E);
@@ -92,7 +92,7 @@ void fault_handler(regs_t *r)
 		//Check if the OS is in debug mode
 		#if DEBUG == 0
 		//Nope
-		
+
 		/*Display the current exception and make sure the user is
 		 *sufficiently calmed
 		 */
@@ -103,7 +103,7 @@ void fault_handler(regs_t *r)
 			terminal_writestring("I know you're scared now... Here's a cat under the moon...\n");
 			print_kitty();
 			halt();
-		
+
 		#else
 		//Yep
 			terminal_putchar('\n');
@@ -116,9 +116,45 @@ void fault_handler(regs_t *r)
 
 			regdump(r);
 			halt();
-		
+
 		#endif
     }
+}
+
+void pagefault_handler(uint32_t pgf, regs_t *r)
+{
+
+		//Check if the OS is in debug mode
+		#if DEBUG == 0
+		//Nope
+
+		/*Display the current exception and make sure the user is
+		 *sufficiently calmed
+		 */
+			terminal_set_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
+			terminal_clear();
+			terminal_writestring(exception_messages[r->int_no]);
+			terminal_writestring(" Exception. System Halted!\n");
+			terminal_writestring("I know you're scared now... Here's a cat under the moon...\n");
+			print_kitty();
+			halt();
+
+		#else
+		//Yep
+			terminal_putchar('\n');
+			terminal_set_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
+			terminal_writestring(exception_messages[r->int_no]);
+			terminal_putchar('[');
+			terminal_writehexdword(r->int_no);
+			terminal_putchar(']');
+			terminal_writestring(" Exception. System Halted!\n");
+            terminal_writestring("Pagefault error code: ");
+            terminal_writehexdword(pgf);
+            terminal_putchar('\n');
+			regdump(r);
+			halt();
+
+		#endif
 }
 
 void print_kitty()
@@ -145,7 +181,7 @@ void print_kitty()
 	terminal_writeline("  |  |  |  |(_(  |  |  |  |  |  |  |  |  |  |");
 	terminal_writeline("  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |");
 	terminal_writeline("  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |");
-	
+
 }
 
 void regdump(struct regs *r)

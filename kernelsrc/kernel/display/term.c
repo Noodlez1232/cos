@@ -17,9 +17,6 @@ uint8_t terminal_foreground_color;
 //This stores the current background color
 uint8_t terminal_background_color;
 
-//This is a pointer to where the current buffer for the terminal is
-uint16_t* terminal_buffer;
-
 //This stores all the characters required for the terminal_writehex* functions
 char hextable[] = "0123456789ABCDEF";
 
@@ -56,9 +53,7 @@ void terminal_initialize(void)
 	//This sets the default color of our terminal (Light grey for the foreground and black for the background)
 	terminal_color = vga_entry_color(VGA_COLOR_GREEN, VGA_COLOR_BLACK);
 	//This sets the address of the terminal buffer
-	//terminal_buffer = (uint16_t*) 0xB8000;
-	//terminal_buffer = (uint16_t*) 0xC00B8000;
-	terminal_buffer = (uint16_t*) 0xC03FF000;
+	terminal_buffer = (uint16_t*) TERM_ADDR;
 	//This sets the address of the video port
 	//terminal_video_port = (uint16_t*) 0x0463;
 	//videoPort = (uint16_t*) 0xC0000463;

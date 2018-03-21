@@ -1,7 +1,10 @@
 #ifndef TERM_H
 #define TERM_H 1
-
+#define TERM_ADDR 0xC00B8000
 #include <common.h>
+
+//This is a pointer to where the current buffer for the terminal is
+uint16_t* terminal_buffer;
 
 /* Hardware text mode color constants. */
 enum vga_color
