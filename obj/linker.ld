@@ -12,22 +12,23 @@ SECTIONS
 	_kernel_start = .;
 	.text ALIGN (4K) : AT (ADDR (.text) - 0xC0000000)
 	{
-		*(.multiboot)
+		boot.o (.multiboot)
+		boot.o (.text)
 		*(.text)
 	}
 	.rodata ALIGN (4K) : AT (ADDR (.rodata) - 0xC0000000)
 	{
 		*(.rodata)
 	}
-	.data ALIGN (4K) : AT (ADDR (.data) - 0xC0000000)
-	{
-		*(.data)
-	}
 	.bss ALIGN (4K) : AT (ADDR (.bss) - 0xC0000000)
 	{
 		*(COMMON)
 		*(.bss)
 		*(.bootstrap_stack)
+	}
+	.data ALIGN (4K) : AT (ADDR (.data) - 0xC0000000)
+	{
+		*(.data)
 	}
 	/* Add a symbol that indicates the end address of the kernel. */
 	_kernel_end = .;

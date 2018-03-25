@@ -37,13 +37,16 @@ void arch_init(uint32_t* arch_stuff)
 
 void set_paging(uint32_t* boot_dir)
 {
+    asm volatile("xchg %bx, %bx");
     //Set all of them to present and read write
     uint16_t flags = P | RW;
+    asm volatile("movl %0, %%eax" : : "r"(pt1) : );
     for (uint32_t i = 0; i<1024; i++)
     {
         //Map the first physical 4MB to the table
         pt1[i] = set_pte(i * 4096, flags);
     }
+    asm volatile("xchg %bx, %bx");
     //Map the VGA driver to the final mapping
     pt1[1023] = set_pte(0xB000, flags);
     //And we set up our page table
