@@ -37,6 +37,12 @@ void arch_init(uint32_t* arch_stuff)
 
 void set_paging(uint32_t* boot_dir)
 {
+	asm volatile ("xchg %%bx, %%bx");
+	terminal_debug_writeline("PT");
+	terminal_debug_writehexdword(pt1);
+	terminal_debug_putchar('\n');
+	terminal_debug_writeline("PD");
+	terminal_debug_writehexdword(pd1);
     //Set all of them to present and read write
     uint16_t flags = P | RW;
     for (uint32_t i = 0; i<1024; i++)
@@ -48,6 +54,7 @@ void set_paging(uint32_t* boot_dir)
     pt1[1023] = set_pte(0xB000, flags);
     //And we set up our page table
     pd1[(_kernel_base >> 21)] = set_pde(pt1 - _kernel_base, flags);
+    pd1[0] = set_pde(pt1 - _kernel_base, flags);
     load_pd(pd1 - _kernel_base);
 }
 
