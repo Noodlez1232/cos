@@ -322,7 +322,7 @@ void terminal_info(char* string, char infoLevel)
 
 }
 
-void terminal_warn(char* string)
+void terminal_warn()
 {
     terminal_writestring("[");
     terminal_color = vga_entry_color(VGA_COLOR_LIGHT_BROWN, VGA_COLOR_BLACK);

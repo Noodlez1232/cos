@@ -17,10 +17,10 @@ uint32_t timer_ticks;
 bool timer_enabled;
 
 uint32_t pt1[1024] __attribute__ ((aligned (4096)));
+uint32_t pt2[1024] __attribute__ ((aligned (4096)));
 uint32_t pd1[1024] __attribute__ ((aligned (4096)));
 
 extern uint32_t _kernel_start;
-extern uint32_t _kernel_base;
 
 void arch_init(uint32_t* arch_stuff)
 {
@@ -29,6 +29,9 @@ void arch_init(uint32_t* arch_stuff)
     init_isrs();
     init_irqs();
     set_paging(arch_stuff[2]);
+    //Now that paging is set up, we can set the terminal buffer to the mapped address
+    terminal_buffer = 0xC03FF000;
+
 //     pit_install(1000, &x86_pit_handler);
 //     timer_enabled = false;
 //     timer_ticks = 0;
@@ -37,27 +40,49 @@ void arch_init(uint32_t* arch_stuff)
 
 void set_paging(uint32_t* boot_dir)
 {
-	asm volatile ("xchg %%bx, %%bx");
+    uint32_t pt1_phys = (uint32_t)pt1 - KERNEL_BASE;
+    uint32_t pt2_phys = (uint32_t)pt2 - KERNEL_BASE;
+    uint32_t pd1_phys = (uint32_t)pd1 - KERNEL_BASE;
 	terminal_debug_writeline("PT");
 	terminal_debug_writehexdword(pt1);
 	terminal_debug_putchar('\n');
 	terminal_debug_writeline("PD");
 	terminal_debug_writehexdword(pd1);
+    terminal_debug_putchar('\n');
+    terminal_debug_writeline("PTP");
+    terminal_debug_writehexdword(pt1_phys);
+    terminal_debug_putchar('\n');
+    terminal_debug_writeline("PDP");
+    terminal_debug_writehexdword(pd1_phys);
+    terminal_debug_putchar('\n');
+    terminal_debug_writeline("KB");
+    terminal_debug_writehexdword(KERNEL_BASE);
+    terminal_debug_putchar('\n');
+    asm volatile ("xchg %bx, %bx");
+    //First, let's set all the tables to 0
+    for (uint32_t i = 0; i < 1024; i++)
+    {
+        pt1[i] = 0;
+        pt2[i] = 0;
+        pd1[i] = 0;
+    }
+
     //Set all of them to present and read write
     uint16_t flags = P | RW;
-    asm volatile("movl %0, %%eax" : : "r"(pt1) : );
     for (uint32_t i = 0; i<1024; i++)
     {
         //Map the first physical 4MB to the table
         pt1[i] = set_pte(i * 4096, flags);
+        //Map the next physical 4MB to the table
+        pt2[i] = set_pte(i * 4096 + (4096 * 1024), flags);
     }
     asm volatile("xchg %bx, %bx");
     //Map the VGA driver to the final mapping
-    pt1[1023] = set_pte(0xB000, flags);
+    pt1[1023] = set_pte(0xB8000, flags);
     //And we set up our page table
-    pd1[(_kernel_base >> 21)] = set_pde(pt1 - _kernel_base, flags);
-    pd1[0] = set_pde(pt1 - _kernel_base, flags);
-    load_pd(pd1 - _kernel_base);
+    pd1[KERNEL_BASE / 0x400000] = set_pde(pt1_phys, flags);
+    pd1[KERNEL_BASE / 0x400000 + 1] = set_pde(pt2_phys, flags);
+    load_pd(pd1_phys);
 }
 
 void delay(uint32_t ms)

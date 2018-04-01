@@ -5,6 +5,9 @@
 #include <arch/x86/regs.h>
 #include <arch/x86/multiboot.h>
 
+
+#define KERNEL_BASE 0xC0000000
+
 typedef struct arch_info_table
 {
     uint32_t* multiboot_magic;

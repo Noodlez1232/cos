@@ -18,7 +18,7 @@ enum pgflags
 
 uint32_t set_pte(uint32_t addr, uint16_t flags);
 
-uint32_t set_pde(uint32_t addr, uint8_t flags);
+uint32_t set_pde(uint32_t addr, uint16_t flags);
 
 void load_pd(uint32_t physaddr);
 
