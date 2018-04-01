@@ -168,7 +168,6 @@ i686-elf-gcc -T linker.ld -o $OUT -ffreestanding -nostdlib *.o -lgcc
 cp cos.bin ../cos.bin
 
 #Clean up the mess that we made
-cleanUp
 cd ..
 
 #Check all our arguments

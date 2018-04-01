@@ -90,8 +90,9 @@ mov cr0, ecx
 ; we need to do a long jump to the correct virtual address of StartInHigherHalf which is
 ; approximately 0xC0100000.
 xchg bx,bx
-lea ecx, [HigherHalfStart]
-jmp ecx
+mov ecx, eax
+lea eax, [HigherHalfStart]
+jmp eax
 
 HigherHalfStart:
     ;Finally into the higher half. No more dealing with that stupid crap with
@@ -100,7 +101,7 @@ HigherHalfStart:
     mov dword [BootPageDirectory], 0 ;We need to specify DWORD so it clears the whole entry
     invlpg [0] ;And we invalidate that page
 
-
+	mov eax, ecx
 	mov esp, stack_top
 
 
