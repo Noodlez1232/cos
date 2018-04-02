@@ -1,0 +1,254 @@
+ELF Header:
+  Magic:   7f 45 4c 46 01 01 01 00 00 00 00 00 00 00 00 00 
+  Class:                             ELF32
+  Data:                              2's complement, little endian
+  Version:                           1 (current)
+  OS/ABI:                            UNIX - System V
+  ABI Version:                       0
+  Type:                              EXEC (Executable file)
+  Machine:                           Intel 80386
+  Version:                           0x1
+  Entry point address:               0xc0100010
+  Start of program headers:          52 (bytes into file)
+  Start of section headers:          29848 (bytes into file)
+  Flags:                             0x0
+  Size of this header:               52 (bytes)
+  Size of program headers:           32 (bytes)
+  Number of program headers:         3
+  Size of section headers:           40 (bytes)
+  Number of section headers:         11
+  Section header string table index: 8
+
+Section Headers:
+  [Nr] Name              Type            Addr     Off    Size   ES Flg Lk Inf Al
+  [ 0]                   NULL            00000000 000000 000000 00      0   0  0
+  [ 1] .text             PROGBITS        c0100000 001000 001c13 00  AX  0   0 16
+  [ 2] .rodata.str1.1    PROGBITS        c0101c13 002c13 0002ae 01 AMS  0   0  1
+  [ 3] .eh_frame         PROGBITS        c0101ec4 002ec4 000dfc 00   A  0   0  4
+  [ 4] .rodata.str1.4    PROGBITS        c0102cc0 003cc0 000238 01 AMS  0   0  4
+  [ 5] .bss              NOBITS          c0103000 004000 00a100 00  WA  0   0 4096
+  [ 6] .data             PROGBITS        c010e000 004000 002011 00  WA  0   0 4096
+  [ 7] .comment          PROGBITS        00000000 006011 000011 01  MS  0   0  1
+  [ 8] .shstrtab         STRTAB          00000000 007439 00005d 00      0   0  1
+  [ 9] .symtab           SYMTAB          00000000 006024 000be0 10     10  43  4
+  [10] .strtab           STRTAB          00000000 006c04 000835 00      0   0  1
+Key to Flags:
+  W (write), A (alloc), X (execute), M (merge), S (strings), I (info),
+  L (link order), O (extra OS processing required), G (group), T (TLS),
+  C (compressed), x (unknown), o (OS specific), E (exclude),
+  p (processor specific)
+
+There are no section groups in this file.
+
+Program Headers:
+  Type           Offset   VirtAddr   PhysAddr   FileSiz MemSiz  Flg Align
+  LOAD           0x001000 0xc0100000 0x00100000 0x02ef8 0x02ef8 R E 0x1000
+  LOAD           0x004000 0xc0103000 0x00103000 0x00000 0x0a100 RW  0x1000
+  LOAD           0x004000 0xc010e000 0x0010e000 0x02011 0x02011 RW  0x1000
+
+ Section to Segment mapping:
+  Segment Sections...
+   00     .text .rodata.str1.1 .eh_frame .rodata.str1.4 
+   01     .bss 
+   02     .data 
+
+There is no dynamic section in this file.
+
+There are no relocations in this file.
+
+The decoding of unwind sections for machine type Intel 80386 is not currently supported.
+
+Symbol table '.symtab' contains 190 entries:
+   Num:    Value  Size Type    Bind   Vis      Ndx Name
+     0: 00000000     0 NOTYPE  LOCAL  DEFAULT  UND 
+     1: c0100000     0 SECTION LOCAL  DEFAULT    1 
+     2: c0101c13     0 SECTION LOCAL  DEFAULT    2 
+     3: c0101ec4     0 SECTION LOCAL  DEFAULT    3 
+     4: c0102cc0     0 SECTION LOCAL  DEFAULT    4 
+     5: c0103000     0 SECTION LOCAL  DEFAULT    5 
+     6: c010e000     0 SECTION LOCAL  DEFAULT    6 
+     7: 00000000     0 SECTION LOCAL  DEFAULT    7 
+     8: 00000000     0 FILE    LOCAL  DEFAULT  ABS /home/nathaniel/Documents/programs/cos/kernelsrc/kernel/arch/x86/boot.s
+     9: 00000001     0 NOTYPE  LOCAL  DEFAULT  ABS MBALIGN
+    10: 00000002     0 NOTYPE  LOCAL  DEFAULT  ABS MEMINFO
+    11: 00000003     0 NOTYPE  LOCAL  DEFAULT  ABS FLAGS
+    12: 1badb002     0 NOTYPE  LOCAL  DEFAULT  ABS MAGIC
+    13: e4524ffb     0 NOTYPE  LOCAL  DEFAULT  ABS CHECKSUM
+    14: c0000000     0 NOTYPE  LOCAL  DEFAULT  ABS KERNEL_VIRTUAL_BASE
+    15: 00000300     0 NOTYPE  LOCAL  DEFAULT  ABS KERNEL_PAGE_NUMBER
+    16: c0109000     0 NOTYPE  LOCAL  DEFAULT    5 stack_bottom
+    17: c010d000     0 NOTYPE  LOCAL  DEFAULT    5 stack_top
+    18: c010d000     0 NOTYPE  LOCAL  DEFAULT    5 arch_data
+    19: c010f000     0 NOTYPE  LOCAL  DEFAULT    6 BootPageDirectory
+    20: c010003d     0 NOTYPE  LOCAL  DEFAULT    1 HigherHalfStart
+    21: c0100077     0 NOTYPE  LOCAL  DEFAULT    1 HigherHalfStart.hang
+    22: c010007a     0 NOTYPE  LOCAL  DEFAULT    1 HigherHalfStart.end
+    23: 00000000     0 FILE    LOCAL  DEFAULT  ABS irqs.asm
+    24: c01000f0     0 NOTYPE  LOCAL  DEFAULT    1 irq_common_stub
+    25: 00000000     0 FILE    LOCAL  DEFAULT  ABS isrs.asm
+    26: c010021e     0 NOTYPE  LOCAL  DEFAULT    1 isr_common_stub
+    27: c0100247     0 NOTYPE  LOCAL  DEFAULT    1 pf_stub
+    28: 00000000     0 FILE    LOCAL  DEFAULT  ABS load_gdt.asm
+    29: c010028c     0 NOTYPE  LOCAL  DEFAULT    1 load_gdt.flush
+    30: 00000000     0 FILE    LOCAL  DEFAULT  ABS load_idt.asm
+    31: 00000000     0 FILE    LOCAL  DEFAULT  ABS x86.c
+    32: 00000000     0 FILE    LOCAL  DEFAULT  ABS gdt.c
+    33: 00000000     0 FILE    LOCAL  DEFAULT  ABS idt.c
+    34: 00000000     0 FILE    LOCAL  DEFAULT  ABS irqs.c
+    35: 00000000     0 FILE    LOCAL  DEFAULT  ABS isrs.c
+    36: 00000000     0 FILE    LOCAL  DEFAULT  ABS paging.c
+    37: 00000000     0 FILE    LOCAL  DEFAULT  ABS physmm.c
+    38: 00000000     0 FILE    LOCAL  DEFAULT  ABS pit.c
+    39: 00000000     0 FILE    LOCAL  DEFAULT  ABS ports.c
+    40: 00000000     0 FILE    LOCAL  DEFAULT  ABS term.c
+    41: 00000000     0 FILE    LOCAL  DEFAULT  ABS common.c
+    42: 00000000     0 FILE    LOCAL  DEFAULT  ABS kernel.c
+    43: c0101130    24 FUNC    GLOBAL DEFAULT    1 terminal_set_background_color
+    44: c0100290     0 NOTYPE  GLOBAL DEFAULT    1 load_idt
+    45: c0100980    16 FUNC    GLOBAL DEFAULT    1 master_EOI
+    46: c0100490    29 FUNC    GLOBAL DEFAULT    1 x86_pit_handler
+    47: c0100270     0 NOTYPE  GLOBAL DEFAULT    1 load_gdt
+    48: c0108040     6 OBJECT  GLOBAL DEFAULT    5 idt_ptr
+    49: c0101060     7 FUNC    GLOBAL DEFAULT    1 inportw
+    50: c0103000  4096 OBJECT  GLOBAL DEFAULT    5 pt2
+    51: c0100148     0 NOTYPE  GLOBAL DEFAULT    1 isr4
+    52: c01019e0    97 FUNC    GLOBAL DEFAULT    1 memmove
+    53: c010885c     1 OBJECT  GLOBAL DEFAULT    5 terminal_color
+    54: c01001fb     0 NOTYPE  GLOBAL DEFAULT    1 isr27
+    55: c010019a     0 NOTYPE  GLOBAL DEFAULT    1 isr13
+    56: c0100eb0   142 FUNC    GLOBAL DEFAULT    1 pagefault_handler
+    57: c01000d4     0 NOTYPE  GLOBAL DEFAULT    1 irq12
+    58: c0100990    19 FUNC    GLOBAL DEFAULT    1 slave_EOI
+    59: c0104000     1 OBJECT  GLOBAL DEFAULT    5 pit_installed
+    60: c01001d8     0 NOTYPE  GLOBAL DEFAULT    1 isr22
+    61: c01001a7     0 NOTYPE  GLOBAL DEFAULT    1 isr15
+    62: c01013c0    40 FUNC    GLOBAL DEFAULT    1 terminal_writeline
+    63: c0100e20   131 FUNC    GLOBAL DEFAULT    1 fault_handler
+    64: c01000c6     0 NOTYPE  GLOBAL DEFAULT    1 irq10
+    65: c01000e2     0 NOTYPE  GLOBAL DEFAULT    1 irq14
+    66: c0101770    23 FUNC    GLOBAL DEFAULT    1 terminal_debug_putchar
+    67: c0101040     6 FUNC    GLOBAL DEFAULT    1 inportb
+    68: c0100178     0 NOTYPE  GLOBAL DEFAULT    1 isr9
+    69: c01000b8     0 NOTYPE  GLOBAL DEFAULT    1 irq8
+    70: c0101b00    49 FUNC    GLOBAL DEFAULT    1 memcpy
+    71: c01001df     0 NOTYPE  GLOBAL DEFAULT    1 isr23
+    72: c0101000    51 FUNC    GLOBAL DEFAULT    1 pit_install
+    73: c01013f0    88 FUNC    GLOBAL DEFAULT    1 terminal_clear
+    74: c0100209     0 NOTYPE  GLOBAL DEFAULT    1 isr29
+    75: c01013a0    28 FUNC    GLOBAL DEFAULT    1 terminal_writestring
+    76: c0101680    59 FUNC    GLOBAL DEFAULT    1 terminal_writehexdword
+    77: c010019f     0 NOTYPE  GLOBAL DEFAULT    1 pgf
+    78: c0108860     4 OBJECT  GLOBAL DEFAULT    5 terminal_video_port
+    79: c0100710    17 FUNC    GLOBAL DEFAULT    1 irq_uninstall_handler
+    80: c0100217     0 NOTYPE  GLOBAL DEFAULT    1 isr31
+    81: c0101b60     2 FUNC    GLOBAL DEFAULT    1 clear_interrupts
+    82: c01001d1     0 NOTYPE  GLOBAL DEFAULT    1 isr21
+    83: c01000cd     0 NOTYPE  GLOBAL DEFAULT    1 irq11
+    84: c0100202     0 NOTYPE  GLOBAL DEFAULT    1 isr28
+    85: c0108000    40 OBJECT  GLOBAL DEFAULT    5 gdt_entries
+    86: c0100170     0 NOTYPE  GLOBAL DEFAULT    1 isr8
+    87: c01000a3     0 NOTYPE  GLOBAL DEFAULT    1 irq5
+    88: c01001ca     0 NOTYPE  GLOBAL DEFAULT    1 isr20
+    89: c0100a00   660 FUNC    GLOBAL DEFAULT    1 init_isrs
+    90: c01005d0    87 FUNC    GLOBAL DEFAULT    1 gdt_set_gate
+    91: c0110011     0 NOTYPE  GLOBAL DEFAULT    6 _kernel_end
+    92: c0101b80    84 FUNC    GLOBAL DEFAULT    1 strtol
+    93: c0100152     0 NOTYPE  GLOBAL DEFAULT    1 isr5
+    94: c010e000   128 OBJECT  GLOBAL DEFAULT    6 exception_messages
+    95: c0101280   223 FUNC    GLOBAL DEFAULT    1 terminal_putchar
+    96: c01011a0    91 FUNC    GLOBAL DEFAULT    1 terminal_updatecursor
+    97: c0101be0    51 FUNC    GLOBAL DEFAULT    1 kernel_main
+    98: c0108460  1020 OBJECT  GLOBAL DEFAULT    5 irq_routines
+    99: c0108864     1 OBJECT  GLOBAL DEFAULT    5 terminal_foreground_color
+   100: c01000aa     0 NOTYPE  GLOBAL DEFAULT    1 irq6
+   101: c01014a0   329 FUNC    GLOBAL DEFAULT    1 terminal_info
+   102: c0100087     0 NOTYPE  GLOBAL DEFAULT    1 irq1
+   103: c0100f40    22 FUNC    GLOBAL DEFAULT    1 set_pte
+   104: c0101830    30 FUNC    GLOBAL DEFAULT    1 terminal_debug_writeline
+   105: c0104001     1 OBJECT  GLOBAL DEFAULT    5 timer_enabled
+   106: c0101110    30 FUNC    GLOBAL DEFAULT    1 terminal_set_color
+   107: c01016c0   166 FUNC    GLOBAL DEFAULT    1 terminal_itoa
+   108: c0101050    10 FUNC    GLOBAL DEFAULT    1 outportb
+   109: c0100670    60 FUNC    GLOBAL DEFAULT    1 idt_set_gate
+   110: c01010b0    89 FUNC    GLOBAL DEFAULT    1 terminal_initialize
+   111: c0101360    64 FUNC    GLOBAL DEFAULT    1 terminal_write
+   112: c0100fc0    57 FUNC    GLOBAL DEFAULT    1 pit_phase
+   113: c01002a0   377 FUNC    GLOBAL DEFAULT    1 set_paging
+   114: c0100010     0 NOTYPE  GLOBAL DEFAULT    1 _start
+   115: c0101790    65 FUNC    GLOBAL DEFAULT    1 terminal_debug_write
+   116: c0101450    23 FUNC    GLOBAL DEFAULT    1 terminal_setcursor
+   117: c010012a     0 NOTYPE  GLOBAL DEFAULT    1 isr1
+   118: c0108060  1024 OBJECT  GLOBAL DEFAULT    5 idt_entries
+   119: c01000bf     0 NOTYPE  GLOBAL DEFAULT    1 irq9
+   120: c0108868     4 OBJECT  GLOBAL DEFAULT    5 terminal_column
+   121: c0101630    47 FUNC    GLOBAL DEFAULT    1 terminal_writehexbyte
+   122: c01001f4     0 NOTYPE  GLOBAL DEFAULT    1 isr26
+   123: c0104004    24 OBJECT  GLOBAL DEFAULT    5 GRUB_PACKED
+   124: c010018a     0 NOTYPE  GLOBAL DEFAULT    1 isr11
+   125: c01007c0   338 FUNC    GLOBAL DEFAULT    1 init_irqs
+   126: c0100630    57 FUNC    GLOBAL DEFAULT    1 init_idt
+   127: c0101470    37 FUNC    GLOBAL DEFAULT    1 terminal_newline
+   128: c0101a70    88 FUNC    GLOBAL DEFAULT    1 memcmp
+   129: c01004b0   274 FUNC    GLOBAL DEFAULT    1 init_gdt
+   130: c0100f80    11 FUNC    GLOBAL DEFAULT    1 load_pd
+   131: c01009b0    68 FUNC    GLOBAL DEFAULT    1 send_EOI
+   132: c0101090    18 FUNC    GLOBAL DEFAULT    1 vga_entry
+   133: c010401c     4 OBJECT  GLOBAL DEFAULT    5 timer_ticks
+   134: c01000db     0 NOTYPE  GLOBAL DEFAULT    1 irq13
+   135: c0100192     0 NOTYPE  GLOBAL DEFAULT    1 isr12
+   136: c0101ad0    44 FUNC    GLOBAL DEFAULT    1 memset
+   137: c01006b0    91 FUNC    GLOBAL DEFAULT    1 irq_install_handler
+   138: c0100120     0 NOTYPE  GLOBAL DEFAULT    1 isr0
+   139: c0101200   113 FUNC    GLOBAL DEFAULT    1 terminal_scroll
+   140: c0101b70     2 FUNC    GLOBAL DEFAULT    1 set_interrupts
+   141: c010008e     0 NOTYPE  GLOBAL DEFAULT    1 irq2
+   142: c010886c     1 OBJECT  GLOBAL DEFAULT    5 terminal_background_color
+   143: c0105000  4096 OBJECT  GLOBAL DEFAULT    5 pt1
+   144: c0101150    28 FUNC    GLOBAL DEFAULT    1 terminal_set_foreground_color
+   145: c0100ca0   257 FUNC    GLOBAL DEFAULT    1 print_kitty
+   146: c0108028     6 OBJECT  GLOBAL DEFAULT    5 gdt_ptr
+   147: c01001e6     0 NOTYPE  GLOBAL DEFAULT    1 isr24
+   148: c01001ae     0 NOTYPE  GLOBAL DEFAULT    1 isr16
+   149: c01019a0    54 FUNC    GLOBAL DEFAULT    1 strcmp
+   150: c0110000    17 OBJECT  GLOBAL DEFAULT    6 hextable
+   151: c0100db0   105 FUNC    GLOBAL DEFAULT    1 regdump
+   152: c0100470    28 FUNC    GLOBAL DEFAULT    1 delay
+   153: c010013e     0 NOTYPE  GLOBAL DEFAULT    1 isr3
+   154: c0106000     4 OBJECT  GLOBAL DEFAULT    5 terminal_buffer
+   155: c0107000  4096 OBJECT  GLOBAL DEFAULT    5 pd1
+   156: c010015c     0 NOTYPE  GLOBAL DEFAULT    1 isr6
+   157: c01000b1     0 NOTYPE  GLOBAL DEFAULT    1 irq7
+   158: c0100920    84 FUNC    GLOBAL DEFAULT    1 irq_handler
+   159: c01001bc     0 NOTYPE  GLOBAL DEFAULT    1 isr18
+   160: c0100080     0 NOTYPE  GLOBAL DEFAULT    1 irq0
+   161: c0101070    11 FUNC    GLOBAL DEFAULT    1 outportw
+   162: c0101900   157 FUNC    GLOBAL DEFAULT    1 terminal_debug_itoa
+   163: c0101b40     3 FUNC    GLOBAL DEFAULT    1 halt
+   164: c0100420    66 FUNC    GLOBAL DEFAULT    1 arch_init
+   165: c0101b50     2 FUNC    GLOBAL DEFAULT    1 halt_with_interrupts
+   166: c0101660    25 FUNC    GLOBAL DEFAULT    1 terminal_writehexword
+   167: c0100182     0 NOTYPE  GLOBAL DEFAULT    1 isr10
+   168: c01017e0    65 FUNC    GLOBAL DEFAULT    1 terminal_debug_writestring
+   169: c01001b5     0 NOTYPE  GLOBAL DEFAULT    1 isr17
+   170: c0100134     0 NOTYPE  GLOBAL DEFAULT    1 isr2
+   171: c0100730   130 FUNC    GLOBAL DEFAULT    1 irq_remap
+   172: c01001c3     0 NOTYPE  GLOBAL DEFAULT    1 isr19
+   173: c0100210     0 NOTYPE  GLOBAL DEFAULT    1 isr30
+   174: c0101a50    29 FUNC    GLOBAL DEFAULT    1 strlen
+   175: c0100000     0 NOTYPE  GLOBAL DEFAULT    1 _kernel_start
+   176: c0100f90    33 FUNC    GLOBAL DEFAULT    1 pit_uninstall
+   177: c01000e9     0 NOTYPE  GLOBAL DEFAULT    1 irq15
+   178: c0100166     0 NOTYPE  GLOBAL DEFAULT    1 isr7
+   179: c01015f0    62 FUNC    GLOBAL DEFAULT    1 terminal_warn
+   180: c01018b0    66 FUNC    GLOBAL DEFAULT    1 terminal_debug_writehexdword
+   181: c0108870     4 OBJECT  GLOBAL DEFAULT    5 terminal_row
+   182: c0101170    42 FUNC    GLOBAL DEFAULT    1 terminal_putentryat
+   183: c01001ed     0 NOTYPE  GLOBAL DEFAULT    1 isr25
+   184: c0101850    62 FUNC    GLOBAL DEFAULT    1 terminal_debug_writehexbyte
+   185: c0100f60    22 FUNC    GLOBAL DEFAULT    1 set_pde
+   186: c0101080    13 FUNC    GLOBAL DEFAULT    1 vga_entry_color
+   187: c010009c     0 NOTYPE  GLOBAL DEFAULT    1 irq4
+   188: c0100095     0 NOTYPE  GLOBAL DEFAULT    1 irq3
+   189: c0101890    30 FUNC    GLOBAL DEFAULT    1 terminal_debug_writehexword
+
+No version information found in this file.

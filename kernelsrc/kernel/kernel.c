@@ -3,7 +3,6 @@
 
 #if ARCH==x86
     #include <arch/x86.h>
-    #include <arch/x86/multiboot.h>
 #else
     #error No arch specified or non-compatible arch given
 #endif
