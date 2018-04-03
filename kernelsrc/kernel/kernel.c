@@ -10,6 +10,6 @@ void kernel_main(uint32_t* arch_stuff)
 {
     terminal_initialize();
     terminal_writeline("Loading...");
-    arch_init(arch_stuff);
+    arch_init((arch_info_table_t*) arch_stuff);
 	terminal_writestring("Hello, kernel World!\n");
 }

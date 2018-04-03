@@ -20,7 +20,6 @@ uint32_t set_pde(uint32_t addr, uint16_t flags)
 
 void load_pd(uint32_t physaddr)
 {
-    asm volatile("xchg %bx, %bx");
     asm volatile("movl %0, %%cr3" : : "r"(physaddr) : );
 }
 

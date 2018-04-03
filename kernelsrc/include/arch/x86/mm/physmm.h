@@ -9,5 +9,6 @@ uint32_t phys_findfreemem(uint32_t size);
 void phys_deallocatemem(uint32_t* pointer);
 uint32_t phys_getfreemem();
 void phys_parsememtable(uint32_t* grub_memtable);
+uint32_t pmm_init(uint32_t* bitmap, uint32_t bitmap_size);
 
 #endif

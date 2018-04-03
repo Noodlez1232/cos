@@ -73,7 +73,6 @@ global _start
 _start:
 ; NOTE: Until paging is set up, the code must be position-independent and use physical
 ; addresses, not virtual ones!
-xchg bx,bx
 mov ecx, (BootPageDirectory - KERNEL_VIRTUAL_BASE)
 mov cr3, ecx                                        ; Load Page Directory Base Register.
 
@@ -89,7 +88,6 @@ mov cr0, ecx
 ; Since eip at this point holds the physical address of this command (approximately 0x00100000)
 ; we need to do a long jump to the correct virtual address of StartInHigherHalf which is
 ; approximately 0xC0100000.
-xchg bx,bx
 mov ecx, eax
 lea eax, [HigherHalfStart]
 jmp eax

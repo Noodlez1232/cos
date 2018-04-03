@@ -74,7 +74,9 @@ void* memcpy(void* restrict dstptr, const void* restrict srcptr, size_t size)
 
 void halt()
 {
+    #if ARCH == x86
 	asm volatile("cli");
+    #endif
 	for (;;);
 }
 

@@ -9,6 +9,7 @@
 #include <arch/x86/irqs.h>
 #include <arch/x86/pit.h>
 #include <arch/x86/mm/paging.h>
+#include <arch/x86/mm/physmm.h>
 #include <arch/x86/multiboot.h>
 
 #include <display/term.h>
@@ -20,17 +21,37 @@ uint32_t pt1[1024] __attribute__ ((aligned (4096)));
 uint32_t pt2[1024] __attribute__ ((aligned (4096)));
 uint32_t pd1[1024] __attribute__ ((aligned (4096)));
 
+void set_paging();
+void set_pmm_blocks(uint32_t* grub_table);
+
+//Our bitmap to use. This is 32KB or for the full 4GB address space
+uint32_t bitmap[0x7FFF];
+
 extern uint32_t _kernel_start;
 
-void arch_init(uint32_t* arch_stuff)
+void arch_init(arch_info_table_t* arch_stuff)
 {
+
+    //Let's first check to make sure that the kernel was booted with a multiboot compliant bootloader
+    if (arch_stuff->multiboot_magic != 0x2BADB002)
+    {
+        terminal_set_color(VGA_COLOR_RED, VGA_COLOR_WHITE);
+        terminal_writeline("COS must be loaded using a multiboot compiant loader (such as GRUB)!");
+        terminal_writeline("Halting");
+        halt();
+    }
+
     init_gdt();
     init_idt();
     init_isrs();
     init_irqs();
-    set_paging(arch_stuff[2]);
+    set_paging();
     //Now that paging is set up, we can set the terminal buffer to the mapped address
     terminal_buffer = 0xC03FF000;
+
+    //And now we initialize our physical memory manager.
+    pmm_init(bitmap, 0x7FFF);
+    set_pmm_blocks(arch_stuff->mbt);
 
 //     pit_install(1000, &x86_pit_handler);
 //     timer_enabled = false;
@@ -38,7 +59,7 @@ void arch_init(uint32_t* arch_stuff)
     terminal_writestring("Arch inited\n");
 }
 
-void set_paging(uint32_t* boot_dir)
+void set_paging()
 {
     uint32_t pt1_phys = (uint32_t)pt1 - KERNEL_BASE;
     uint32_t pt2_phys = (uint32_t)pt2 - KERNEL_BASE;
@@ -58,7 +79,6 @@ void set_paging(uint32_t* boot_dir)
     terminal_debug_writeline("KB");
     terminal_debug_writehexdword(KERNEL_BASE);
     terminal_debug_putchar('\n');
-    asm volatile ("xchg %bx, %bx");
     //First, let's set all the tables to 0
     for (uint32_t i = 0; i < 1024; i++)
     {
@@ -76,13 +96,18 @@ void set_paging(uint32_t* boot_dir)
         //Map the next physical 4MB to the table
         pt2[i] = set_pte(i * 4096 + (4096 * 1024), flags);
     }
-    asm volatile("xchg %bx, %bx");
     //Map the VGA driver to the final mapping
     pt1[1023] = set_pte(0xB8000, flags);
     //And we set up our page table
     pd1[KERNEL_BASE / 0x400000] = set_pde(pt1_phys, flags);
     pd1[KERNEL_BASE / 0x400000 + 1] = set_pde(pt2_phys, flags);
     load_pd(pd1_phys);
+}
+
+//We set the certain parts that we will be using in our kernel to used.
+void set_pmm_blocks(uint32_t* grub_table)
+{
+
 }
 
 void delay(uint32_t ms)
