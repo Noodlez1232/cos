@@ -23,6 +23,11 @@ void load_pd(uint32_t physaddr)
     asm volatile("movl %0, %%cr3" : : "r"(physaddr) : );
 }
 
+void tlb_flush()
+{
+    asm volatile("movl %%cr3, %%eax; movl %%eax, %%cr3" : : : "eax");
+}
+
 // //Map a physical address to a virtual address.
 // void map_address(phys_addr_t physaddr, virt_addr_t virtaddr)
 // {

@@ -1,5 +1,4 @@
 #include <arch/x86/mm/physmm.h>
-#include <arch/x86.h>
 
 //We first set up our physical memory table
 //We set this up to cover all 4GB of the address space
@@ -20,6 +19,16 @@ uint32_t pmm_init(uint32_t* bitmap, uint32_t bitmap_size)
     membitmap = bitmap;
     memmapsize = bitmap_size;
     mmap_initialized = true;
+}
+
+void phys_parsememtable(multiboot_memory_map_t* grub_memtable, uint32_t grub_memmap_size)
+{
+    for (uint32_t i = 0; i < grub_memmap_size; i++)
+    {
+        multiboot_memory_map_t* tmp_map = grub_memtable;
+        
+
+    }
 }
 
 //Sets a certain block of memory used

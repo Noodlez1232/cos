@@ -42,6 +42,18 @@ char *exception_messages[] =
 	"Reserved"
 };
 
+char* pf_messages[] =
+{
+    "Supervisory process tried to read a non-present page entry.",
+    "Supervisory process tried to read a page and caused a protection fault.",
+    "Supervisory process tried to write to a non-present page entry.",
+    "Supervisory process tried to write a page and caused a protection fault.",
+    "User process tried to read a non-present page entry.",
+    "User process tried to read a page and caused a protection fault.",
+    "User process tried to write to a non-present page entry.",
+    "User process tried to write a page and caused a protection fault."
+};
+
 void init_isrs()
 {
     idt_set_gate(0, (unsigned)isr0, 0x08, 0x8E);
@@ -58,7 +70,7 @@ void init_isrs()
     idt_set_gate(11, (unsigned)isr11, 0x08, 0x8E);
     idt_set_gate(12, (unsigned)isr12, 0x08, 0x8E);
     idt_set_gate(13, (unsigned)isr13, 0x08, 0x8E);
-    idt_set_gate(14, (unsigned)pgf, 0x08, 0x8E);
+    idt_set_gate(14, (unsigned)isr14, 0x08, 0x8E);
     idt_set_gate(15, (unsigned)isr15, 0x08, 0x8E);
     idt_set_gate(16, (unsigned)isr16, 0x08, 0x8E);
     idt_set_gate(17, (unsigned)isr17, 0x08, 0x8E);
@@ -100,10 +112,13 @@ void fault_handler(regs_t *r)
 			terminal_clear();
 			terminal_writestring(exception_messages[r->int_no]);
 			terminal_writestring(" Exception. System Halted!\n");
+            if (r->int_no == 14) //pagefault
+            {
+                terminal_writeline(pf_messages[r->err_code]);
+            }
 			terminal_writestring("I know you're scared now... Here's a cat under the moon...\n");
 			print_kitty();
 			halt();
-
 		#else
 		//Yep
 			terminal_putchar('\n');
@@ -113,48 +128,16 @@ void fault_handler(regs_t *r)
 			terminal_writehexdword(r->int_no);
 			terminal_putchar(']');
 			terminal_writestring(" Exception. System Halted!\n");
+            if (r->int_no == 14) //pagefault
+            {
+                terminal_writeline(pf_messages[r->err_code]);
+            }
 
 			regdump(r);
 			halt();
 
 		#endif
     }
-}
-
-void pagefault_handler(uint32_t pgf, regs_t *r)
-{
-
-		//Check if the OS is in debug mode
-		#if DEBUG == 0
-		//Nope
-
-		/*Display the current exception and make sure the user is
-		 *sufficiently calmed
-		 */
-			terminal_set_color(VGA_COLOR_WHITE, VGA_COLOR_BLACK);
-			terminal_clear();
-			terminal_writestring(exception_messages[r->int_no]);
-			terminal_writestring(" Exception. System Halted!\n");
-			terminal_writestring("I know you're scared now... Here's a cat under the moon...\n");
-			print_kitty();
-			halt();
-
-		#else
-		//Yep
-			terminal_putchar('\n');
-			terminal_set_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
-			terminal_writestring(exception_messages[r->int_no]);
-			terminal_putchar('[');
-			terminal_writehexdword(r->int_no);
-			terminal_putchar(']');
-			terminal_writestring(" Exception. System Halted!\n");
-            terminal_writestring("Pagefault error code: ");
-            terminal_writehexdword(pgf);
-            terminal_putchar('\n');
-			regdump(r);
-			halt();
-
-		#endif
 }
 
 void print_kitty()
@@ -186,13 +169,37 @@ void print_kitty()
 
 void regdump(struct regs *r)
 {
-	terminal_writestring("gs:");
-	terminal_writehexdword(r->gs);
-	terminal_writestring(" fs:");
-	terminal_writehexdword(r->gs);
-	terminal_writestring(" es:");
-	terminal_writehexdword(r->es);
-	terminal_writestring(" ds:");
+    terminal_writeline("Segments");
+    terminal_writestring("ds:");
 	terminal_writehexdword(r->ds);
-	terminal_putchar('\n');
+    terminal_writestring(" cs:");
+    terminal_writehexdword(r->cs);
+    terminal_writestring(" ss:");
+    terminal_writehexdword(r->ss);
+    terminal_putchar('\n');
+    terminal_writeline("Index registers");
+    terminal_writestring("edi:");
+    terminal_writehexdword(r->edi);
+    terminal_writestring("esi:");
+    terminal_writehexdword(r->esi);
+    terminal_putchar('\n');
+    terminal_writeline("Pointer registers");
+    terminal_writestring("ebp:");
+    terminal_writehexdword(r->ebp);
+    terminal_writestring(" esp:");
+    terminal_writehexdword(r->esp);
+    terminal_writestring(" uesp:");
+    terminal_writehexdword(r->useresp);
+    terminal_writestring(" eip:");
+    terminal_writehexdword(r->eip);
+    terminal_putchar('\n');
+    terminal_writeline("General Purpose registers");
+    terminal_writestring("eax:");
+    terminal_writehexdword(r->eax);
+    terminal_writestring(" ebx:");
+    terminal_writehexdword(r->ebx);
+    terminal_writestring(" ecx:");
+    terminal_writehexdword(r->ecx);
+    terminal_writestring(" edx:");
+    terminal_writehexdword(r->edx);
 }

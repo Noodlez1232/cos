@@ -87,11 +87,15 @@ void halt_with_interrupts()
 
 void clear_interrupts()
 {
+    #if ARCH == x86
 	asm volatile("cli");
+    #endif
 }
 void set_interrupts()
 {
+    #if ARCH == x86
 	asm volatile("sti");
+    #endif
 }
 
 uint32_t strtol(char a[])

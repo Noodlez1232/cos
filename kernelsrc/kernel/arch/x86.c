@@ -22,7 +22,7 @@ uint32_t pt2[1024] __attribute__ ((aligned (4096)));
 uint32_t pd1[1024] __attribute__ ((aligned (4096)));
 
 void set_paging();
-void set_pmm_blocks(uint32_t* grub_table);
+void set_pmm_blocks(multiboot_info_t* grub_table);
 
 //Our bitmap to use. This is 32KB or for the full 4GB address space
 uint32_t bitmap[0x7FFF];
@@ -105,9 +105,27 @@ void set_paging()
 }
 
 //We set the certain parts that we will be using in our kernel to used.
-void set_pmm_blocks(uint32_t* grub_table)
+void set_pmm_blocks(multiboot_info_t* grub_table)
 {
-
+    //We set a temporary address for the grub table to sit in, from which we get the memory map, which we map a full 8kb area
+    pt2[1023] = set_pte((uint32_t)grub_table, P);
+    grub_table = (multiboot_info_t*) (((uint32_t)grub_table % 4096) + KERNEL_BASE + 0x7FF000);
+    terminal_debug_writeline("Grub table init");
+    terminal_debug_writehexdword((uint32_t)grub_table);
+    terminal_debug_putchar('\n');
+    //Make sure the system knows that this is there
+    tlb_flush();
+    //And now we get the address of the memory map
+    multiboot_memory_map_t* memmap = (multiboot_memory_map_t*)  grub_table -> mmap_addr;
+    uint32_t memmap_length = grub_table -> mmap_length;
+    terminal_writeline("Get mmap");
+    //And now we set that up in our page table
+    pt2[1022] = set_pte((uint32_t)memmap, P);
+    pt2[1022] = set_pte((uint32_t)(memmap + 4096), P);
+    //And make sure the system updates that change
+    tlb_flush();
+    //And now we init the pmm blocks with that memory table
+    phys_parsememtable((multiboot_memory_map_t*)KERNEL_BASE + 0x7FE000, memmap_length);
 }
 
 void delay(uint32_t ms)

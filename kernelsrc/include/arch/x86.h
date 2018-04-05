@@ -11,7 +11,7 @@
 typedef struct arch_info_table
 {
     uint32_t multiboot_magic;
-    uint32_t* mbt;
+    multiboot_info_t* mbt;
     uint32_t* boot_page_table;
 } arch_info_table_t;
 
